@@ -4,6 +4,8 @@ COPY . .
 
 ENV JAVA_TOOL_OPTIONS="-Duser.timezone=Asia/Seoul"
 
+RUN echo $DB_PASSWORD
+
 RUN ./gradlew clean build --no-daemon -x test
 
 RUN mkdir -p /app/logs/info /app/logs/error /app/logs/warn

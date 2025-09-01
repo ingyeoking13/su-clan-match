@@ -1,5 +1,4 @@
 spring:
-
   profiles:
     active: local
   datasource:
@@ -34,6 +33,7 @@ logging.level:
   org.springframework.session.data.redis: debug
 
 server:
+  port: 8080
   error:
     include-exception: true
     include-message: always

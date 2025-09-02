@@ -29,7 +29,7 @@ jobs:
         run: |
           echo "RELEASE_TAG=${{ github.ref_name }}" >> .env.production
           sed -i 's/\r//' .env.production
-          docker build . -t ${{ vars.DOCKER_IMAGE_NAME }}:${{ github.ref_name }} -f suclan/Dockerfile --no-cache --push --build-arg DB_USERNAME=${{ secrets.DB_USERNAME }} --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          docker build . -t ${{ vars.DOCKER_IMAGE_NAME }}:${{ github.ref_name }} -f suclan/Dockerfile --no-cache --push --build-arg DB_USER=${{ secrets.DB_USER }} --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }}
 
       - name: Set output
         id: set_output

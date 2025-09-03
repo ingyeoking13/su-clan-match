@@ -8,7 +8,7 @@ on:
 
 env:
   REGION: 'asia-northeast3'
-  SERVICE: 'suclan-back'
+  BACK_SERVICE: 'suclan-back'
   FRONT_SERVICE: 'suclan-front'
   BACK_IMAGE: 'gaelim/suclan-back'
   FRONT_IMAGE: 'gaelim/suclan-front'

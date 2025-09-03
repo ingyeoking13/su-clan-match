@@ -2,9 +2,11 @@ FROM amazoncorretto:24-alpine
 WORKDIR /app
 COPY . .
 
+ARG DB_USER
+ARG DB_PASSWORD
+ENV DB_USER=$DB_USER
+ENV DB_PASSWORD=$DB_PASSWORD
 ENV JAVA_TOOL_OPTIONS="-Duser.timezone=Asia/Seoul"
-
-RUN echo $DB_PASSWORD
 
 RUN ./gradlew clean build --no-daemon -x test
 

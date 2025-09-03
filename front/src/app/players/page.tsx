@@ -11,55 +11,113 @@ import { PlayerEditForm } from '@/components/PlayerEditForm';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { playerApi } from '@/lib/api';
-import { Player, EntityStatus } from '@/types';
-import { UserCheck, Trophy, Target, Plus, Eye, EyeOff, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Player, EntityStatus, PaginatedResponse } from '@/types';
+import { UserCheck, Trophy, Target, Plus, Eye, EyeOff, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, Search, X } from 'lucide-react';
 
 export default function PlayersPage() {
   const [showDeleted, setShowDeleted] = useState(false);
   const [currentPage, setCurrentPage] = useState(0); // Spring은 0부터 시작
   const [pageSize, setPageSize] = useState(10);
-  // 정렬 상태
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  // 다중 정렬 상태
+  const [sorts, setSorts] = useState<Array<{ field: string; direction: 'asc' | 'desc' }>>([
+    { field: 'createdAt', direction: 'desc' }
+  ]);
   
-  const { data: response, loading, error, refetch } = useApi(() => 
-    playerApi.getAll(showDeleted, currentPage, pageSize, undefined, sortBy, sortDir), 
-    [showDeleted, currentPage, pageSize, sortBy, sortDir]
-  );
+  // 검색 상태
+  const [searchCondition, setSearchCondition] = useState({
+    nickname: '',
+    grade: ''
+  });
+  const [appliedSearchCondition, setAppliedSearchCondition] = useState({
+    nickname: '',
+    grade: ''
+  });
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  
+  const { data: response, loading, error, refetch } = useApi<PaginatedResponse<Player>>(() => {
+    // 실제 적용된 검색 조건을 사용
+    return playerApi.getAll(appliedSearchCondition, showDeleted, currentPage, pageSize, sorts);
+  }, [showDeleted, currentPage, pageSize, sorts, appliedSearchCondition.nickname, appliedSearchCondition.grade]);
   const { mutate: deletePlayer, loading: deleteLoading } = useApiMutation<void>();
 
-  // Spring Pageable 응답 처리
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const paginatedData = (response as any)?.data || (response as any) || {};
-  const players: Player[] = paginatedData?.content || [];
-  const totalPages = paginatedData?.totalPages || 0;
-  const totalElements = paginatedData?.totalElements || 0;
+  // PaginatedResponse에서 데이터와 페이지네이션 정보 추출
+  const players: Player[] = response?.content || [];
+  const totalPages = response?.totalPages || 0;
+  const totalElements = response?.totalElements || 0;
 
   // showDeleted, pageSize, 정렬이 변경되면 첫 페이지로 이동
   React.useEffect(() => {
     setCurrentPage(0);
-  }, [showDeleted, pageSize, sortBy, sortDir]);
+  }, [showDeleted, pageSize, sorts]);
 
-  // 정렬 핸들러
+  // 검색 핸들러 함수들
+  const handleSearch = () => {
+    const hasSearchCondition = !!(searchCondition.nickname.trim() || searchCondition.grade.trim());
+    setIsSearchMode(hasSearchCondition);
+    setAppliedSearchCondition(searchCondition); // 검색 조건 적용
+    setCurrentPage(0); // 검색 시 첫 페이지로 이동
+  };
+
+  const handleClearSearch = () => {
+    setSearchCondition({ nickname: '', grade: '' });
+    setAppliedSearchCondition({ nickname: '', grade: '' }); // 적용된 검색 조건도 클리어
+    setIsSearchMode(false);
+    setCurrentPage(0);
+  };
+
+  const handleSearchInputChange = (field: 'nickname' | 'grade', value: string) => {
+    setSearchCondition(prev => ({ ...prev, [field]: value }));
+  };
+
+    // 다중 정렬 핸들러 (클릭 중첩)
   const handleSort = (field: string) => {
-    if (sortBy === field) {
-      // 같은 필드를 클릭하면 방향 토글
-      setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      // 다른 필드를 클릭하면 해당 필드로 변경하고 내림차순으로 시작
-      setSortBy(field);
-      setSortDir('desc');
-    }
+    setSorts(prevSorts => {
+      const existingIndex = prevSorts.findIndex(sort => sort.field === field);
+      
+      if (existingIndex >= 0) {
+        // 이미 있는 필드면 방향 토글 또는 제거
+        const currentDirection = prevSorts[existingIndex].direction;
+        if (currentDirection === 'desc') {
+          // desc -> asc
+          const newSorts = [...prevSorts];
+          newSorts[existingIndex] = { field, direction: 'asc' };
+          return newSorts;
+        } else {
+          // asc -> 제거
+          return prevSorts.filter(sort => sort.field !== field);
+        }
+      } else {
+        // 새 필드 추가 (기존 정렬 유지하면서)
+        return [...prevSorts, { field, direction: 'desc' }];
+      }
+    });
   };
 
   // 정렬 아이콘 반환 함수
   const getSortIcon = (field: string) => {
-    if (sortBy !== field) {
+    const sortIndex = sorts.findIndex(sort => sort.field === field);
+    if (sortIndex === -1) {
       return <ArrowUpDown className="h-4 w-4 text-gray-400" />;
     }
-    return sortDir === 'asc' 
+    
+    const sort = sorts[sortIndex];
+    const icon = sort.direction === 'asc'
       ? <ArrowUp className="h-4 w-4 text-blue-600" />
       : <ArrowDown className="h-4 w-4 text-blue-600" />;
+    
+    // 다중 정렬인 경우 순서 표시
+    if (sorts.length > 1) {
+      return (
+        <div className="flex items-center">
+          {icon}
+          <span className="ml-1 text-xs bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center">
+            {sortIndex + 1}
+          </span>
+        </div>
+      );
+    }
+    
+    return icon;
   };
 
 
@@ -173,29 +231,121 @@ export default function PlayersPage() {
         </div>
       </div>
 
-      {/* 페이지 크기 선택 */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <div className="text-sm text-gray-700">
-            전체 {totalElements}명
-            {totalElements > 0 && (
-              <span> 중 {currentPage * pageSize + 1}-{Math.min((currentPage + 1) * pageSize, totalElements)}명 표시</span>
-            )}
-          </div>
-        </div>
+      {/* 검색 및 페이지 정보 */}
+      <div className="flex items-center gap-4">
+        {/* 페이지 크기 선택 */}
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-500">페이지당</span>
+          <span className="text-sm text-gray-700 whitespace-nowrap">페이지당</span>
           <select
             value={pageSize}
             onChange={(e) => setPageSize(Number(e.target.value))}
-            className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value={10}>10개</option>
             <option value={20}>20개</option>
             <option value={30}>30개</option>
           </select>
         </div>
+        
+        {/* 검색 영역 */}
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={searchCondition.nickname}
+            onChange={(e) => handleSearchInputChange('nickname', e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="선수명 검색"
+            className="w-32 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <input
+            type="text"
+            value={searchCondition.grade}
+            onChange={(e) => handleSearchInputChange('grade', e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="등급 검색"
+            className="w-24 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 whitespace-nowrap"
+          >
+            <Search className="h-3 w-3 mr-1" />
+            검색
+          </button>
+          {isSearchMode && (
+            <button
+              onClick={handleClearSearch}
+              className="flex items-center px-2 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors whitespace-nowrap"
+            >
+              <X className="h-3 w-3 mr-1" />
+              초기화
+            </button>
+          )}
+        </div>
+
+        {/* 페이지 정보 */}
+        <div className="text-sm text-gray-700 ml-auto">
+          전체 {totalElements}명
+          {totalElements > 0 && (
+            <span> 중 {currentPage * pageSize + 1}-{Math.min((currentPage + 1) * pageSize, totalElements)}명 표시</span>
+          )}
+        </div>
       </div>
+
+      {/* 검색 상태 표시 */}
+      {isSearchMode && (
+        <div className="flex items-center text-xs text-blue-600 mb-4">
+          <Search className="h-3 w-3 mr-1" />
+          <span>
+            검색 중: 
+            {appliedSearchCondition.nickname && ` 선수명 "${appliedSearchCondition.nickname}"`}
+            {appliedSearchCondition.nickname && appliedSearchCondition.grade && ', '}
+            {appliedSearchCondition.grade && ` 등급 "${appliedSearchCondition.grade}"`}
+          </span>
+        </div>
+      )}
+
+      {/* 정렬 상태 안내 */}
+      {sorts.length > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <div className="flex items-center text-sm text-blue-700">
+            <span className="font-medium">
+              정렬 적용 중:
+            </span>
+            <div className="ml-2 flex flex-wrap gap-2">
+              {sorts.map((sort, index) => {
+                // 필드명을 한글로 변환
+                const getFieldName = (field: string) => {
+                  switch (field) {
+                    case 'nickname': return '선수명';
+                    case 'race': return '종족';
+                    case 'totalMatches': return '총 경기';
+                    case 'wins': return '승리';
+                    case 'losses': return '패배';
+                    case 'status': return '상태';
+                    case 'createdAt': return '등록일';
+                    default: return field;
+                  }
+                };
+
+                return (
+                  <span key={sort.field} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                    {sorts.length > 1 && `${index + 1}. `}
+                    {getFieldName(sort.field)} ({sort.direction === 'asc' ? '오름차순' : '내림차순'})
+                  </span>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setSorts([])}
+              className="ml-auto text-blue-600 hover:text-blue-800 text-xs underline"
+            >
+              정렬 초기화
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 선수 테이블 */}
       <Card>
@@ -211,9 +361,20 @@ export default function PlayersPage() {
                     <button
                       onClick={() => handleSort('nickname')}
                       className="flex items-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                      title="클릭하여 정렬 추가/변경/제거"
                     >
                       <span>선수명</span>
                       {getSortIcon('nickname')}
+                    </button>
+                  </th>
+                  <th className="py-3 px-4">
+                    <button
+                      onClick={() => handleSort('race')}
+                      className="flex items-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                      title="클릭하여 정렬 추가/변경/제거"
+                    >
+                      <span>종족</span>
+                      {getSortIcon('race')}
                     </button>
                   </th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900">등급</th>
@@ -222,6 +383,7 @@ export default function PlayersPage() {
                     <button
                       onClick={() => handleSort('totalMatches')}
                       className="flex items-center justify-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors w-full"
+                      title="클릭하여 정렬 추가/변경/제거"
                     >
                       <span>총 경기</span>
                       {getSortIcon('totalMatches')}
@@ -231,17 +393,28 @@ export default function PlayersPage() {
                     <button
                       onClick={() => handleSort('wins')}
                       className="flex items-center justify-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors w-full"
+                      title="클릭하여 정렬 추가/변경/제거"
                     >
                       <span>승리</span>
                       {getSortIcon('wins')}
                     </button>
                   </th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-900">패배</th>
+                  <th className="py-3 px-4">
+                    <button
+                      onClick={() => handleSort('losses')}
+                      className="flex items-center justify-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors w-full"
+                      title="클릭하여 정렬 추가/변경/제거"
+                    >
+                      <span>패배</span>
+                      {getSortIcon('losses')}
+                    </button>
+                  </th>
                   <th className="text-center py-3 px-4 font-medium text-gray-900">승률</th>
                   <th className="py-3 px-4">
                     <button
                       onClick={() => handleSort('status')}
                       className="flex items-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                      title="클릭하여 정렬 추가/변경/제거"
                     >
                       <span>상태</span>
                       {getSortIcon('status')}
@@ -251,6 +424,7 @@ export default function PlayersPage() {
                     <button
                       onClick={() => handleSort('createdAt')}
                       className="flex items-center justify-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors w-full"
+                      title="클릭하여 정렬 추가/변경/제거"
                     >
                       <span>등록일</span>
                       {getSortIcon('createdAt')}
@@ -289,6 +463,20 @@ export default function PlayersPage() {
                             )}
                           </div>
                         </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        {player.race ? (
+                          <span className={`px-2 py-1 rounded text-sm font-medium ${
+                            player.race === 'TERRAN' ? 'bg-blue-100 text-blue-800' :
+                            player.race === 'ZERG' ? 'bg-purple-100 text-purple-800' :
+                            player.race === 'PROTOSS' ? 'bg-green-100 text-green-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {player.race}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-sm">-</span>
+                        )}
                       </td>
                       <td className="py-3 px-4">
                         {player.grade ? (

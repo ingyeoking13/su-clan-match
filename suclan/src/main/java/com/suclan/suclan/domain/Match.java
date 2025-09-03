@@ -1,6 +1,7 @@
 package com.suclan.suclan.domain;
 
 import com.suclan.suclan.constant.EntityStatus;
+import com.suclan.suclan.constant.Race;
 import com.suclan.suclan.domain.base.SoftDeleteTimeEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -37,6 +40,12 @@ public class Match extends SoftDeleteTimeEntity {
   @JoinColumn(name="player_two_id")
   Player playerTwo;
 
+  @Enumerated(EnumType.STRING)
+  Race playerOneRace;
+
+  @Enumerated(EnumType.STRING)
+  Race playerTwoRace;
+
   @ManyToOne
   @JoinColumn(name = "winner_id")
   Player winner;
@@ -47,10 +56,13 @@ public class Match extends SoftDeleteTimeEntity {
 
   String mapName;
   String description;
+  String streamingUrl;
 
   @ManyToOne
   @JoinColumn(name="contest_id")
   Contest contest;
+
+  LocalDateTime matchTime;
 
   @Enumerated(EnumType.STRING)
   @Builder.Default

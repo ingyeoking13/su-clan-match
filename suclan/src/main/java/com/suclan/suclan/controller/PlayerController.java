@@ -34,7 +34,7 @@ public class PlayerController {
     public ResponseEntity<Page<PlayerDto.Summary>> getAllPlayers(
             @PageableDefault Pageable pageable,
             @RequestParam(required = false) boolean includeDeleted,
-            PlayerDto.SearchCondition condition
+            @ModelAttribute PlayerDto.SearchCondition condition
         ) {
         Page<PlayerDto.Summary> players = playerService.getAllPlayers(pageable, includeDeleted, condition);
         return ResponseEntity.ok(players);
@@ -64,8 +64,8 @@ public class PlayerController {
      * 플레이어 삭제 (소프트 삭제)
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePlayer(@PathVariable Long id) {
+    public ResponseEntity<Boolean> deletePlayer(@PathVariable Long id) {
         playerService.deletePlayer(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(true);
     }
 }

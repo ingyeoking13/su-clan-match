@@ -173,7 +173,7 @@ class PlayerControllerTest {
                 2
         );
 
-        when(playerService.getAllPlayers(any())).thenReturn(playerPage);
+        when(playerService.getAllPlayers(any(), any(), any())).thenReturn(playerPage);
 
         // When & Then
         mockMvc.perform(get("/api/players")
@@ -187,7 +187,7 @@ class PlayerControllerTest {
                 .andExpect(jsonPath("$.content[1].nickname").value("플레이어2"))
                 .andExpect(jsonPath("$.totalElements").value(2));
 
-        verify(playerService, times(1)).getAllPlayers(any());
+        verify(playerService, times(1)).getAllPlayers(any(), any(), any());
     }
 
     @Test

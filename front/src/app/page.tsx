@@ -7,12 +7,12 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { useApi } from '@/hooks/useApi';
 import { clanApi, playerApi, matchApi, contestApi } from '@/lib/api';
-import { DashboardStats as DashboardStatsType, Match, Clan, Player, Contest, EntityStatus } from '@/types';
+import { DashboardStats as DashboardStatsType, Match, Clan, Player, Contest, EntityStatus, PaginatedResponse } from '@/types';
 
 export default function Dashboard() {
   // API 데이터 페칭
   const { data: clans, loading: clansLoading, error: clansError, refetch: refetchClans } = useApi<Clan[]>(clanApi.getAll);
-  const { data: players, loading: playersLoading, error: playersError, refetch: refetchPlayers } = useApi<Player[]>(playerApi.getAll);
+  const { data: players, loading: playersLoading, error: playersError, refetch: refetchPlayers } = useApi<PaginatedResponse<Player>>(() => playerApi.getAll());
   const { data: matches, loading: matchesLoading, error: matchesError, refetch: refetchMatches } = useApi<Match[]>(matchApi.getAll);
   const { data: contests, loading: contestsLoading, error: contestsError, refetch: refetchContests } = useApi<Contest[]>(contestApi.getAll);
 
@@ -23,7 +23,7 @@ export default function Dashboard() {
   // 통계 데이터 계산
   const stats: DashboardStatsType = {
     totalClans: clans?.length || 0,
-    totalPlayers: players?.length || 0,
+    totalPlayers: players?.content?.length || 0,
     totalMatches: matches?.length || 0,
     totalContests: contests?.length || 0,
     activeContests: (contests || []).filter(c => c.status === EntityStatus.RUNNING).length,

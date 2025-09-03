@@ -60,8 +60,8 @@ public class GradeController {
      * 등급 삭제 (소프트 삭제)
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteGrade(@PathVariable Long id) {
+    public ResponseEntity<Boolean> deleteGrade(@PathVariable Long id) {
         gradeService.deleteGrade(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(true);
     }
 }

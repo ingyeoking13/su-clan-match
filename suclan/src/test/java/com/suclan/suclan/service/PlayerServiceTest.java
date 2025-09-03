@@ -210,7 +210,7 @@ class PlayerServiceTest {
         when(playerRepository.findAll(pageable)).thenReturn(playerPage);
 
         // When
-        Page<PlayerDto.Summary> result = playerService.getAllPlayers(pageable);
+        Page<PlayerDto.Summary> result = playerService.getAllPlayers(pageable, true, new PlayerDto.SearchCondition());
 
         // Then
         assertThat(result.getContent()).hasSize(2);

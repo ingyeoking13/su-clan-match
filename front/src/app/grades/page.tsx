@@ -10,7 +10,7 @@ import { GradeDetailModal } from '@/components/GradeDetailModal';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { gradeApi } from '@/lib/api';
-import { Grade, EntityStatus } from '@/types';
+import { Grade, EntityStatus, PaginatedResponse } from '@/types';
 import { Award, Plus, Eye, EyeOff, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function GradesPage() {
@@ -18,18 +18,16 @@ export default function GradesPage() {
   const [currentPage, setCurrentPage] = useState(0); // Spring은 0부터 시작
   const [pageSize, setPageSize] = useState(10);
   
-  const { data: response, loading, error, refetch } = useApi(() => 
+  const { data: response, loading, error, refetch } = useApi<PaginatedResponse<Grade>>(() => 
     gradeApi.getAll(showDeleted, currentPage, pageSize), 
     [showDeleted, currentPage, pageSize]
   );
   const { mutate: deleteGrade, loading: deleteLoading } = useApiMutation<void>();
 
-  // Spring Pageable 응답 처리
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const paginatedData = (response as any)?.data || (response as any) || {};
-  const grades: Grade[] = paginatedData?.content || [];
-  const totalPages = paginatedData?.totalPages || 0;
-  const totalElements = paginatedData?.totalElements || 0;
+  // PaginatedResponse에서 데이터와 페이지네이션 정보 추출
+  const grades: Grade[] = response?.content || [];
+  const totalPages = response?.totalPages || 0;
+  const totalElements = response?.totalElements || 0;
 
   // showDeleted나 pageSize가 변경되면 첫 페이지로 이동
   React.useEffect(() => {

@@ -200,7 +200,7 @@ class MatchControllerTest {
                 2
         );
 
-        when(matchService.getAllMatches(any())).thenReturn(matchPage);
+        when(matchService.getAllMatches(any(), any())).thenReturn(matchPage);
 
         // When & Then
         mockMvc.perform(get("/api/matches")
@@ -214,7 +214,7 @@ class MatchControllerTest {
                 .andExpect(jsonPath("$.content[1].mapName").value("맵2"))
                 .andExpect(jsonPath("$.totalElements").value(2));
 
-        verify(matchService, times(1)).getAllMatches(any());
+        verify(matchService, times(1)).getAllMatches(any(), any());
     }
 
     @Test

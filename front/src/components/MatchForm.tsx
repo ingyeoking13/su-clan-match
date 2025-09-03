@@ -5,8 +5,8 @@ import { Modal } from '@/components/ui/Modal';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { playerApi, contestApi, matchApi } from '@/lib/api';
-import { Match, Player, Contest } from '@/types';
-import { Users, Trophy, MapPin, FileText, Calendar, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Match, Player, Contest, ApiResponse, PaginatedResponse, MatchUpDateRequest } from '@/types';
+import { Users, Trophy, MapPin, FileText, Calendar, User, Link, Clock } from 'lucide-react';
 
 interface MatchFormProps {
   isOpen: boolean;
@@ -20,10 +20,14 @@ interface MatchFormData {
   playerTwoNickname: string; // 콤보박스용 (선택하거나 직접 입력)
   playerOneId: number | ''; // 선택된 플레이어 ID (내부적으로 사용)
   playerTwoId: number | ''; // 선택된 플레이어 ID (내부적으로 사용)
+  playerOneRace: string; // 플레이어 1 종족
+  playerTwoRace: string; // 플레이어 2 종족
   winnerId: number | '';
   mapName: string;
   description: string;
   contestId: number | '';
+  streamingUrl: string; // 스트리밍 URL
+  matchTime: string; // 경기 일자 (YYYY-MM-DDTHH:mm 형식)
 }
 
 export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps) {
@@ -32,10 +36,14 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
     playerTwoNickname: '',
     playerOneId: '',
     playerTwoId: '',
+    playerOneRace: '',
+    playerTwoRace: '',
     winnerId: '',
     mapName: '',
     description: '',
     contestId: '',
+    streamingUrl: '',
+    matchTime: '',
   });
 
   // 콤보박스 드롭다운 표시 상태
@@ -45,19 +53,21 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // 검색어 상태
-  const [playerSearchTerm, setPlayerSearchTerm] = useState('');
-  // 정렬 상태
-  const [sortBy, setSortBy] = useState('createdAt'); // nickname, createdAt, clan 등
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [playerTwoSearchTerm, setPlayerTwoSearchTerm] = useState('');
+  const [playerOneSearchTerm, setPlayerOneSearchTerm] = useState('');
 
-  // API 호출들 - 검색어나 정렬이 변경될 때마다 호출
-  const { data: players, loading: playersLoading } = useApi(
+  // API 호출들 - 검색어가 변경될 때마다 호출
+  const { data: playerOne, loading: playerOneLoading } = useApi(
     isOpen ? () => {
-      console.log('Calling playerApi.getAll with search:', playerSearchTerm, 'sort:', sortBy, sortDir);
-      // 검색어와 정렬 옵션을 함께 전달
-      return playerApi.getAll(false, 0, 100, playerSearchTerm, sortBy, sortDir);
+      return playerApi.getAll({ nickname: playerOneSearchTerm });
     } : null,
-    [isOpen, playerSearchTerm, sortBy, sortDir]
+    [isOpen, playerOneSearchTerm]
+  );
+  const { data: playerTwo, loading: playerTwoLoading } = useApi(
+    isOpen ? () => {
+      return playerApi.getAll({ nickname: playerTwoSearchTerm });
+    } : null,
+    [isOpen, playerTwoSearchTerm]
   );
   const { data: contests, loading: contestsLoading } = useApi(
     isOpen ? () => contestApi.getAll() : null,
@@ -77,10 +87,14 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
         playerTwoNickname: match.playerTwo.nickname,
         playerOneId: match.playerOne.id,
         playerTwoId: match.playerTwo.id,
+        playerOneRace: match.playerOneRace || '',
+        playerTwoRace: match.playerTwoRace || '',
         winnerId: match.winner?.id || '',
         mapName: match.mapName || '',
         description: match.description || '',
         contestId: '', // 백엔드에서 contestId를 제공하지 않으면 빈 값으로 설정
+        streamingUrl: match.streamingUrl || '',
+        matchTime: match.matchTime || '',
       });
     } else if (isOpen && !match) {
       // 새로 생성할 때는 초기값으로 설정
@@ -89,10 +103,14 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
         playerTwoNickname: '',
         playerOneId: '',
         playerTwoId: '',
+        playerOneRace: '',
+        playerTwoRace: '',
         winnerId: '',
         mapName: '',
         description: '',
         contestId: '',
+        streamingUrl: '',
+        matchTime: '',
       });
     }
     setErrors({});
@@ -142,11 +160,15 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
         playerTwoId: formData.playerTwoId || undefined,
         playerOneNickname: formData.playerOneNickname,
         playerTwoNickname: formData.playerTwoNickname,
+        playerOneRace: formData.playerOneRace || null,
+        playerTwoRace: formData.playerTwoRace || null,
         winnerId: formData.winnerId || undefined,
         mapName: formData.mapName,
         description: formData.description,
         contestId: formData.contestId || undefined,
-      };
+        streamingUrl: formData.streamingUrl || undefined,
+        matchTime: formData.matchTime || undefined,
+      } as Partial<MatchUpDateRequest>;
 
       if (isEditing && match) {
         await updateMatch(() => matchApi.update(match.id, matchData));
@@ -169,17 +191,7 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
     }
   };
 
-  // 정렬 핸들러
-  const handleSort = (field: string) => {
-    if (sortBy === field) {
-      // 같은 필드를 클릭하면 방향 토글
-      setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
-    } else {
-      // 다른 필드를 클릭하면 해당 필드로 변경하고 내림차순으로 시작
-      setSortBy(field);
-      setSortDir('desc');
-    }
-  };
+
 
   // 플레이어 선택 핸들러
   const handlePlayerSelect = (playerNumber: 1 | 2, player: Player) => {
@@ -187,14 +199,16 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
       setFormData(prev => ({
         ...prev,
         playerOneNickname: player.nickname,
-        playerOneId: player.id
+        playerOneId: player.id,
+        playerOneRace: player.race || ''
       }));
       setShowPlayerOneDropdown(false);
     } else {
       setFormData(prev => ({
         ...prev,
         playerTwoNickname: player.nickname,
-        playerTwoId: player.id
+        playerTwoId: player.id,
+        playerTwoRace: player.race || ''
       }));
       setShowPlayerTwoDropdown(false);
     }
@@ -202,13 +216,21 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
 
   // 검색어 디바운싱을 위한 useEffect
   useEffect(() => {
-    const searchTerm = formData.playerOneNickname || formData.playerTwoNickname;
+    const searchTerm = formData.playerOneNickname;
     const timer = setTimeout(() => {
-      setPlayerSearchTerm(searchTerm);
+      setPlayerOneSearchTerm(searchTerm);
     }, 300); // 300ms 디바운싱
 
     return () => clearTimeout(timer);
-  }, [formData.playerOneNickname, formData.playerTwoNickname]);
+  }, [formData.playerOneNickname]);
+
+  useEffect(() => {
+    const searchTerm = formData.playerTwoNickname;
+    const timer = setTimeout(() => {
+      setPlayerTwoSearchTerm(searchTerm);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [formData.playerTwoNickname]);
 
   // 플레이어 닉네임 입력 핸들러
   const handlePlayerNicknameChange = (playerNumber: 1 | 2, nickname: string) => {
@@ -216,7 +238,8 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
       setFormData(prev => ({
         ...prev,
         playerOneNickname: nickname,
-        playerOneId: '' // 직접 입력 시 ID 초기화
+        playerOneId: '', // 직접 입력 시 ID 초기화
+        playerOneRace: '' // 직접 입력 시 종족도 초기화
       }));
       // 입력이 있거나 포커스 상태일 때 드롭다운 표시
       setShowPlayerOneDropdown(true);
@@ -224,7 +247,8 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
       setFormData(prev => ({
         ...prev,
         playerTwoNickname: nickname,
-        playerTwoId: '' // 직접 입력 시 ID 초기화
+        playerTwoId: '', // 직접 입력 시 ID 초기화
+        playerTwoRace: '' // 직접 입력 시 종족도 초기화
       }));
       // 입력이 있거나 포커스 상태일 때 드롭다운 표시
       setShowPlayerTwoDropdown(true);
@@ -232,39 +256,51 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
   };
 
   const getAvailablePlayers = (): Player[] => {
-    if (!players) return [];
+    if (!playerOne) return [];
     // PaginatedResponse에서 content 추출
-    const playerList = (players as any)?.data?.content || (players as any)?.content || players;
-    return Array.isArray(playerList) ? playerList : [];
+    const apiResponse = playerOne as ApiResponse<Player>;
+    if (apiResponse?.data && 'content' in apiResponse.data) {
+      return (apiResponse.data as PaginatedResponse<Player>).content;
+    }
+    if (apiResponse?.content) {
+      return apiResponse.content;
+    }
+    return Array.isArray(playerOne) ? playerOne : [];
   };
+
+  const getAvailablePlayersTwo = (): Player[] => {
+    if (!playerTwo) return [];
+    // PaginatedResponse에서 content 추출
+    const apiResponse = playerTwo as ApiResponse<Player>;
+    if (apiResponse?.data && 'content' in apiResponse.data) {
+      return (apiResponse.data as PaginatedResponse<Player>).content;
+    }
+    if (apiResponse?.content) {
+      return apiResponse.content;
+    }
+    return Array.isArray(playerTwo) ? playerTwo : [];
+  };
+
 
   const getAvailableContests = (): Contest[] => {
     if (!contests) return [];
     // PaginatedResponse에서 content 추출
-    const contestList = (contests as any)?.data?.content || (contests as any)?.content || contests;
-    return Array.isArray(contestList) ? contestList : [];
+    const apiResponse = contests as ApiResponse<Contest>;
+    if (apiResponse?.data && 'content' in apiResponse.data) {
+      return (apiResponse.data as PaginatedResponse<Contest>).content;
+    }
+    if (apiResponse?.content) {
+      return apiResponse.content;
+    }
+    return Array.isArray(contests) ? contests : [];
   };
 
-  const availablePlayers = getAvailablePlayers();
+  const availablePlayersOne = getAvailablePlayers();
+  const availablePlayersTwo = getAvailablePlayersTwo();
   const availableContests = getAvailableContests();
   // 서버에서 이미 필터링된 결과를 사용
-  const filteredPlayersOne = availablePlayers;
-  const filteredPlayersTwo = availablePlayers;
-
-  // 플레이어 데이터 확인용 로그
-  React.useEffect(() => {
-    if (isOpen) {
-      console.log('MatchForm - Player Data Check:', {
-        playersLoading,
-        playersRawData: players,
-        availablePlayersCount: availablePlayers.length,
-        availablePlayers: availablePlayers,
-        showPlayerOneDropdown,
-        filteredPlayersOneCount: filteredPlayersOne.length,
-        formDataPlayerOne: formData.playerOneNickname
-      });
-    }
-  }, [isOpen, players, playersLoading, availablePlayers.length, showPlayerOneDropdown, filteredPlayersOne.length, formData.playerOneNickname]);
+  const filteredPlayersOne = availablePlayersOne;
+  const filteredPlayersTwo = availablePlayersTwo;
 
   return (
     <Modal
@@ -295,40 +331,12 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
             />
             
             {/* 드롭다운 목록 */}
-            {showPlayerOneDropdown && !playersLoading && (
+            {showPlayerOneDropdown && !playerOneLoading && (
               <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-64 overflow-hidden">
-                {/* 정렬 헤더 */}
+                {/* 헤더 */}
                 <div className="px-3 py-2 bg-gray-50 border-b border-gray-200">
-                  <div className="flex items-center justify-between text-xs text-gray-600">
+                  <div className="text-xs text-gray-600">
                     <span>플레이어 목록</span>
-                    <div className="flex space-x-1">
-                      <button
-                        type="button"
-                        onClick={() => handleSort('nickname')}
-                        className={`flex items-center px-2 py-1 rounded hover:bg-gray-200 ${
-                          sortBy === 'nickname' ? 'bg-blue-100 text-blue-700' : ''
-                        }`}
-                        title="닉네임순 정렬"
-                      >
-                        이름
-                        {sortBy === 'nickname' && (
-                          sortDir === 'asc' ? <ArrowUp className="h-3 w-3 ml-1" /> : <ArrowDown className="h-3 w-3 ml-1" />
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSort('createdAt')}
-                        className={`flex items-center px-2 py-1 rounded hover:bg-gray-200 ${
-                          sortBy === 'createdAt' ? 'bg-blue-100 text-blue-700' : ''
-                        }`}
-                        title="등록일순 정렬"
-                      >
-                        등록일
-                        {sortBy === 'createdAt' && (
-                          sortDir === 'asc' ? <ArrowUp className="h-3 w-3 ml-1" /> : <ArrowDown className="h-3 w-3 ml-1" />
-                        )}
-                      </button>
-                    </div>
                   </div>
                 </div>
                 
@@ -362,6 +370,25 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
             )}
           </div>
 
+          {/* 플레이어 1 종족 */}
+          <div>
+            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+              <User className="h-4 w-4 mr-1" />
+              플레이어 1 종족
+            </label>
+            <select
+              value={formData.playerOneRace}
+              onChange={(e) => handleInputChange('playerOneRace', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={loading}
+            >
+              <option value="">종족 선택 (선택사항)</option>
+              <option value="TERRAN">TERRAN</option>
+              <option value="PROTOSS">PROTOSS</option>
+              <option value="ZERG">ZERG</option>
+            </select>
+          </div>
+
           {/* 플레이어 2 콤보박스 */}
           <div className="relative">
             <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
@@ -381,7 +408,7 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
             />
             
             {/* 드롭다운 목록 */}
-            {showPlayerTwoDropdown && !playersLoading && (
+            {showPlayerTwoDropdown && !playerTwoLoading && (
               <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                 {filteredPlayersTwo.length > 0 ? (
                   filteredPlayersTwo.map((player) => (
@@ -408,6 +435,25 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
             {errors.playerTwoNickname && (
               <p className="mt-1 text-sm text-red-600">{errors.playerTwoNickname}</p>
             )}
+          </div>
+
+          {/* 플레이어 2 종족 */}
+          <div>
+            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+              <User className="h-4 w-4 mr-1" />
+              플레이어 2 종족
+            </label>
+            <select
+              value={formData.playerTwoRace}
+              onChange={(e) => handleInputChange('playerTwoRace', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={loading}
+            >
+              <option value="">종족 선택 (선택사항)</option>
+              <option value="TERRAN">TERRAN</option>
+              <option value="PROTOSS">PROTOSS</option>
+              <option value="ZERG">ZERG</option>
+            </select>
           </div>
         </div>
 
@@ -497,6 +543,38 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
           )}
         </div>
 
+        {/* 스트리밍 URL과 경기 일자 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* 스트리밍 URL */}
+          <div>
+            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+              <Link className="h-4 w-4 mr-1" />
+              스트리밍 URL (선택사항)
+            </label>
+            <input
+              type="url"
+              value={formData.streamingUrl}
+              onChange={(e) => handleInputChange('streamingUrl', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="https://twitch.tv/username 또는 https://youtube.com/watch?v=..."
+            />
+          </div>
+
+          {/* 경기 일자 */}
+          <div>
+            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+              <Clock className="h-4 w-4 mr-1" />
+              경기 일자 (선택사항)
+            </label>
+            <input
+              type="datetime-local"
+              value={formData.matchTime}
+              onChange={(e) => handleInputChange('matchTime', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+        </div>
+
         {/* 설명 */}
         <div>
           <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
@@ -524,7 +602,7 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
           </button>
           <button
             type="submit"
-            disabled={loading || playersLoading || contestsLoading}
+            disabled={loading || playerOneLoading || playerTwoLoading || contestsLoading}
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading && <LoadingSpinner size="sm" className="mr-2" />}

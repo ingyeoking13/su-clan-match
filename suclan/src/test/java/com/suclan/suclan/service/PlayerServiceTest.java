@@ -53,7 +53,6 @@ class PlayerServiceTest {
                 .id(1L)
                 .nickname("테스트플레이어")
                 .status(EntityStatus.REGISTERED)
-                .matches(new HashSet<>())
                 .build();
         savedPlayer.setCreatedAt(LocalDateTime.now());
         savedPlayer.setUpdatedAt(LocalDateTime.now());
@@ -95,7 +94,8 @@ class PlayerServiceTest {
                 .nickname("테스트플레이어")
                 .grade(grade)
                 .status(EntityStatus.REGISTERED)
-                .matches(new HashSet<>())
+                .wins(new HashSet<>())
+                .losses(new HashSet<>())
                 .build();
         savedPlayer.setCreatedAt(LocalDateTime.now());
         savedPlayer.setUpdatedAt(LocalDateTime.now());
@@ -154,7 +154,8 @@ class PlayerServiceTest {
                 .nickname("테스트플레이어")
                 .grade(grade)
                 .status(EntityStatus.REGISTERED)
-                .matches(new HashSet<>())
+                .wins(new HashSet<>())
+                .losses(new HashSet<>())
                 .build();
         player.setCreatedAt(LocalDateTime.now());
         player.setUpdatedAt(LocalDateTime.now());
@@ -196,13 +197,13 @@ class PlayerServiceTest {
                 .id(1L)
                 .nickname("플레이어1")
                 .status(EntityStatus.REGISTERED)
-                .matches(new HashSet<>())
+                .wins(new HashSet<>())
                 .build();
         Player player2 = Player.builder()
                 .id(2L)
                 .nickname("플레이어2")
                 .status(EntityStatus.REGISTERED)
-                .matches(new HashSet<>())
+                .wins(new HashSet<>())
                 .build();
 
         Page<Player> playerPage = new PageImpl<>(Arrays.asList(player1, player2), pageable, 2);
@@ -242,7 +243,7 @@ class PlayerServiceTest {
                 .id(playerId)
                 .nickname("기존플레이어")
                 .status(EntityStatus.REGISTERED)
-                .matches(new HashSet<>())
+                .wins(new HashSet<>())
                 .build();
         existingPlayer.setCreatedAt(LocalDateTime.now());
         existingPlayer.setUpdatedAt(LocalDateTime.now());

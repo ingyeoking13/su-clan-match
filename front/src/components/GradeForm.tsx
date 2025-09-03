@@ -139,7 +139,7 @@ export const GradeForm: React.FC<GradeFormProps> = ({
             value={formData.name}
             onChange={(e) => handleInputChange('name', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
-            placeholder="예: 다이아몬드, 플래티넘, 골드..."
+            placeholder="예: 1학년, 2학년, ..., 조교"
             required
             disabled={loading}
           />

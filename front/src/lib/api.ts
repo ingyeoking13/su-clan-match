@@ -1,7 +1,11 @@
 // API 설정 및 유틸리티 함수들
-import { Clan, Player, Match, Contest, Grade } from '@/types';
+import { Clan, Player, Match, Contest, Grade, MatchUpDateRequest } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+
+// 디버깅용 로그
+console.log('🔧 API_BASE_URL:', API_BASE_URL);
+console.log('🔧 process.env.NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
 
 export interface ApiResponse<T> {
   data: T;
@@ -130,7 +134,7 @@ export const clanApi = {
 };
 
 export const playerApi = {
-  getAll: (includeDeleted: boolean = false, page: number = 0, size?: number, search?: string, sortBy?: string, sortDir?: string) => {
+  getAll: (searchCondition: { nickname?: string; grade?: string } = {}, includeDeleted: boolean = false, page: number = 0, size?: number, sorts: Array<{ field: string; direction: 'asc' | 'desc' }> = []) => {
     const params = new URLSearchParams({
       page: page.toString()
     });
@@ -140,16 +144,21 @@ export const playerApi = {
     if (includeDeleted) {
       params.append('includeDeleted', 'true');
     }
-    if (search && search.trim()) {
-      params.append('search', search.trim());
+    // SearchCondition 파라미터 추가
+    if (searchCondition.nickname && searchCondition.nickname.trim()) {
+      params.append('nickname', searchCondition.nickname.trim());
     }
-    // Spring Boot Pageable 형식: sort=field,direction
-    if (sortBy && sortDir) {
-      params.append('sort', `${sortBy},${sortDir}`);
+    if (searchCondition.grade && searchCondition.grade.trim()) {
+      params.append('grade', searchCondition.grade.trim());
     }
+    // 다중 정렬 지원: sort=field1,direction1&sort=field2,direction2
+    sorts.forEach(sort => {
+      params.append('sort', `${sort.field},${sort.direction}`);
+    });
     
     return apiClient.get<PaginatedResponse<Player>>(`/players?${params.toString()}`);
   },
+
   getById: (id: number) => {
     return apiClient.get<Player>(`/players/${id}`);
   },
@@ -165,13 +174,20 @@ export const playerApi = {
 };
 
 export const matchApi = {
-  getAll: () => apiClient.get<PaginatedResponse<Match>>('/matches').then(response => ({
-    ...response,
-    data: response.data.content
-  })),
+  getAll: (sorts: Array<{ field: string; direction: 'asc' | 'desc' }> = []) => {
+    const params = new URLSearchParams();
+    sorts.forEach(sort => {
+      params.append('sort', `${sort.field},${sort.direction}`);
+    });
+    const url = sorts.length > 0 ? `/matches?${params.toString()}` : '/matches';
+    return apiClient.get<PaginatedResponse<Match>>(url).then(response => ({
+      ...response,
+      data: response.data.content
+    }));
+  },
   getById: (id: number) => apiClient.get<Match>(`/matches/${id}`),
   create: (data: Partial<Match>) => apiClient.post<Match>('/matches', data),
-  update: (id: number, data: Partial<Match>) => apiClient.put<Match>(`/matches/${id}`, data),
+  update: (id: number, data: Partial<MatchUpDateRequest>) => apiClient.put<Match>(`/matches/${id}`, data),
   delete: (id: number) => apiClient.delete<void>(`/matches/${id}`),
 };
 

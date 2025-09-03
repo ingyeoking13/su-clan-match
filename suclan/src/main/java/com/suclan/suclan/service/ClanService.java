@@ -1,6 +1,5 @@
 package com.suclan.suclan.service;
 
-import com.suclan.suclan.constant.EntityStatus;
 import com.suclan.suclan.domain.Clan;
 import com.suclan.suclan.dto.ClanDto;
 import com.suclan.suclan.exception.ResourceNotFoundException;

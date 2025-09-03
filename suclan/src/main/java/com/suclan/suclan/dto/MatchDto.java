@@ -1,6 +1,7 @@
 package com.suclan.suclan.dto;
 
 import com.suclan.suclan.constant.EntityStatus;
+import com.suclan.suclan.constant.Race;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,9 +18,13 @@ public class MatchDto {
     public static class CreateRequest {
         private Long playerOneId;
         private Long playerTwoId;
+        private Race playerOneRace;
+        private Race playerTwoRace;
         private Long winnerId;
         private String mapName;
         private String description;
+        private String streamingUrl;
+        private LocalDateTime matchTime;
         private Long contestId;
     }
 
@@ -31,6 +36,12 @@ public class MatchDto {
         private Long winnerId;
         private String mapName;
         private String description;
+        private Long playerOneId;
+        private Long playerTwoId;
+        private Race playerOneRace;
+        private Race playerTwoRace;
+        private String streamingUrl;
+        private LocalDateTime matchTime;
         private EntityStatus status;
     }
 
@@ -60,8 +71,23 @@ public class MatchDto {
         private Long id;
         private PlayerDto.Summary playerOne;
         private PlayerDto.Summary playerTwo;
+        private Race playerOneRace;
+        private Race playerTwoRace;
         private PlayerDto.Summary winner;
         private String mapName;
         private LocalDateTime createdAt;
     }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class SearchCondition {
+    private String playerOneNickname;
+    private String playerTwoNickname;
+    private String mapName;
+    private LocalDateTime startedAt;
+    private LocalDateTime endedAt;
+    private boolean includeDeleted;
+  }
 }

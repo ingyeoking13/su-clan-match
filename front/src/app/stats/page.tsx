@@ -5,14 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { useApi } from '@/hooks/useApi';
-import { clanApi, playerApi, matchApi, contestApi } from '@/lib/api';
+import { clanApi, playerApi, matchApi, contestApi, PaginatedResponse } from '@/lib/api';
 import { Clan, Player, Match, Contest, EntityStatus } from '@/types';
 import { BarChart3, TrendingUp, Users, Trophy, Target, Calendar } from 'lucide-react';
 
 export default function StatsPage() {
   // API 데이터 페칭
   const { data: clans, loading: clansLoading, error: clansError, refetch: refetchClans } = useApi<Clan[]>(clanApi.getAll);
-  const { data: players, loading: playersLoading, error: playersError, refetch: refetchPlayers } = useApi<Player[]>(playerApi.getAll);
+  const { data: players, loading: playersLoading, error: playersError, refetch: refetchPlayers } = useApi<PaginatedResponse<Player>>(() => playerApi.getAll());
   const { data: matches, loading: matchesLoading, error: matchesError, refetch: refetchMatches } = useApi<Match[]>(matchApi.getAll);
   const { data: contests, loading: contestsLoading, error: contestsError, refetch: refetchContests } = useApi<Contest[]>(contestApi.getAll);
 
@@ -55,8 +55,8 @@ export default function StatsPage() {
   const runningContests = (contests || []).filter(c => c.status === EntityStatus.RUNNING).length;
   const completedContests = (contests || []).filter(c => c.status === EntityStatus.REGISTERED).length;
 
-  const totalPlayers = players?.length || 0;
-  const activePlayers = (players || []).filter(p => p.status === EntityStatus.REGISTERED).length;
+  const totalPlayers = players?.content?.length || 0;
+  const activePlayers = (players?.content || []).filter(p => p.status === EntityStatus.REGISTERED).length;
 
   const totalClans = clans?.length || 0;
   const activeClans = (clans || []).filter(c => c.status === EntityStatus.REGISTERED).length;

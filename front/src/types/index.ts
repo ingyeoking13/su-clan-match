@@ -31,6 +31,7 @@ export interface Grade extends BaseEntity {
 
 export interface Player extends BaseEntity {
   nickname: string;
+  race?: string;
   grade?: Grade;
   clan?: {
     id: number | null;
@@ -52,11 +53,26 @@ export interface Player extends BaseEntity {
 export interface Match extends BaseEntity {
   playerOne: Player;
   playerTwo: Player;
+  playerOneRace?: string;  // 추가: Match 엔티티의 playerOneRace
+  playerTwoRace?: string;  // 추가: Match 엔티티의 playerTwoRace
   winner?: Player;
   loser?: Player;
   mapName: string;
+  streamingUrl?: string;
+  matchTime?: string; // 경기 일자
   description: string;
   contestName?: string;
+}
+
+export interface MatchUpDateRequest {
+  playerOneRace?: string;
+  playerTwoRace?: string;
+  winnerId?: string;
+  mapName?: string;
+  description?: string;
+  playerOneId?: string;
+  playerTwoId?: string;
+  streamingUrl?: string;
 }
 
 export interface Contest extends BaseEntity {
@@ -75,4 +91,17 @@ export interface DashboardStats {
   totalContests: number;
   activeContests: number;
   recentMatches: Match[];
+}
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
+export interface ApiResponse<T> {
+  data?: PaginatedResponse<T> | T[];
+  content?: T[];
 }

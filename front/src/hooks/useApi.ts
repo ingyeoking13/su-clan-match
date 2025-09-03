@@ -9,7 +9,7 @@ interface UseApiState<T> {
 
 export function useApi<T>(
   apiCall: (() => Promise<ApiResponse<T>>) | null,
-  dependencies: any[] = []
+  dependencies: unknown[] = []
 ): UseApiState<T> & { refetch: () => Promise<void> } {
   const [state, setState] = useState<UseApiState<T>>({
     data: null,
@@ -54,7 +54,7 @@ export function useApi<T>(
   };
 }
 
-export function useApiMutation<T, P = any>() {
+export function useApiMutation<T>() {
   const [state, setState] = useState<UseApiState<T>>({
     data: null,
     loading: false,

@@ -36,3 +36,4 @@ out/
 ### VS Code ###
 .vscode/
 gcp-credentials-6d5ba6e2c5fa.json
+.DS_Store

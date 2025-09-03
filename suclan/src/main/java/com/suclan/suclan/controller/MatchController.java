@@ -31,8 +31,10 @@ public class MatchController {
      */
     @GetMapping
     public ResponseEntity<Page<MatchDto.Summary>> getAllMatches(
-            @PageableDefault Pageable pageable) {
-        Page<MatchDto.Summary> matches = matchService.getAllMatches(pageable);
+            @PageableDefault Pageable pageable,
+            @ModelAttribute MatchDto.SearchCondition condition
+            ) {
+        Page<MatchDto.Summary> matches = matchService.getAllMatches(pageable, condition);
         return ResponseEntity.ok(matches);
     }
 
@@ -42,7 +44,8 @@ public class MatchController {
     @GetMapping("/player/{playerId}")
     public ResponseEntity<Page<MatchDto.Summary>> getMatchesByPlayer(
             @PathVariable Long playerId,
-            @PageableDefault Pageable pageable) {
+            @PageableDefault Pageable pageable
+    ) {
         Page<MatchDto.Summary> matches = matchService.getMatchesByPlayer(playerId, pageable);
         return ResponseEntity.ok(matches);
     }
@@ -71,8 +74,8 @@ public class MatchController {
      * 매치 삭제 (소프트 삭제)
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMatch(@PathVariable Long id) {
+    public ResponseEntity<Boolean> deleteMatch(@PathVariable Long id) {
         matchService.deleteMatch(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(true);
     }
 }

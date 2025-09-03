@@ -237,6 +237,56 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
             </div>
           </div>
 
+          {/* 종족 정보 */}
+          {player.race && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <User className="h-5 w-5 mr-2" />
+                종족 정보
+              </h3>
+              <div className={`rounded-lg p-4 ${
+                player.race === 'TERRAN' ? 'bg-blue-50' :
+                player.race === 'ZERG' ? 'bg-purple-50' :
+                player.race === 'PROTOSS' ? 'bg-green-50' :
+                'bg-gray-50'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className={`font-medium ${
+                      player.race === 'TERRAN' ? 'text-blue-800' :
+                      player.race === 'ZERG' ? 'text-purple-800' :
+                      player.race === 'PROTOSS' ? 'text-green-800' :
+                      'text-gray-800'
+                    }`}>
+                      {player.race}
+                    </h4>
+                    <p className={`text-sm mt-1 ${
+                      player.race === 'TERRAN' ? 'text-blue-600' :
+                      player.race === 'ZERG' ? 'text-purple-600' :
+                      player.race === 'PROTOSS' ? 'text-green-600' :
+                      'text-gray-600'
+                    }`}>
+                      플레이어의 종족입니다.
+                    </p>
+                  </div>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    player.race === 'TERRAN' ? 'bg-blue-200' :
+                    player.race === 'ZERG' ? 'bg-purple-200' :
+                    player.race === 'PROTOSS' ? 'bg-green-200' :
+                    'bg-gray-200'
+                  }`}>
+                    <User className={`h-6 w-6 ${
+                      player.race === 'TERRAN' ? 'text-blue-600' :
+                      player.race === 'ZERG' ? 'text-purple-600' :
+                      player.race === 'PROTOSS' ? 'text-green-600' :
+                      'text-gray-600'
+                    }`} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* 등급 정보 */}
           {player.grade && (
             <div>

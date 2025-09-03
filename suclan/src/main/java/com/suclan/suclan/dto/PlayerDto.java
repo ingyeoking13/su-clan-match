@@ -1,6 +1,7 @@
 package com.suclan.suclan.dto;
 
 import com.suclan.suclan.constant.EntityStatus;
+import com.suclan.suclan.constant.Race;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,7 @@ public class PlayerDto {
     @AllArgsConstructor
     public static class CreateRequest {
         private String nickname;
+        private Race race;
         private Long gradeId;
     }
 
@@ -26,6 +28,7 @@ public class PlayerDto {
     public static class UpdateRequest {
         private String nickname;
         private Long gradeId;
+        private Race race;
         private EntityStatus status;
         private String clanName;
     }
@@ -59,6 +62,8 @@ public class PlayerDto {
         private int totalMatches;
         private int wins;
         private int losses;
+        private Race race;
+        private LocalDateTime createdAt;
         private EntityStatus status;
     }
 

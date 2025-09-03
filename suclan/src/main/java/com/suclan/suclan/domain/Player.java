@@ -1,6 +1,7 @@
 package com.suclan.suclan.domain;
 
 import com.suclan.suclan.constant.EntityStatus;
+import com.suclan.suclan.constant.Race;
 import com.suclan.suclan.domain.base.SoftDeleteTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -33,6 +34,9 @@ public class Player extends SoftDeleteTimeEntity {
   @ManyToOne
   @JoinColumn(name="grade_id")
   Grade grade;
+
+  @Enumerated(EnumType.STRING)
+  Race race;
 
   @ManyToMany
   @Builder.Default

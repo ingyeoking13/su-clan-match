@@ -64,8 +64,8 @@ public class ContestController {
      * 주의: ContestRepository가 구현되지 않아 현재는 예외 발생
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteContest(@PathVariable Long id) {
+    public ResponseEntity<Boolean> deleteContest(@PathVariable Long id) {
         contestService.deleteContest(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(true);
     }
 }

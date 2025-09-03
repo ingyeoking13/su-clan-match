@@ -57,6 +57,7 @@ public class PlayerService {
 
         Player player = Player.builder()
                 .nickname(request.getNickname())
+                .race(request.getRace())
                 .grade(grade)
                 .build();
 
@@ -80,6 +81,10 @@ public class PlayerService {
         if (request.getStatus() != null) {
             player.setStatus(request.getStatus());
         }
+        if (request.getRace() != null) {
+            player.setRace(request.getRace());
+        }
+
         if (request.getClanName() != null) {
           Clan clan  = clanRepository.findByName(request.getClanName()).orElseThrow(
               () -> new ResourceNotFoundException("Clan not found with name: " + request.getClanName())
@@ -124,7 +129,18 @@ public class PlayerService {
       List<OrderSpecifier<?>> orders = new ArrayList<>();
       for (Sort.Order o : pageable.getSort()) {
         PathBuilder<Player> entityPath = new PathBuilder<>(player.getType(), player.getMetadata());
-        orders.add(new OrderSpecifier<>(o.isAscending() ? Order.ASC : Order.DESC, entityPath.getString(o.getProperty())));
+        Order dir = o.isAscending() ? Order.ASC : Order.DESC;
+
+        if (o.getProperty().equalsIgnoreCase("losses")) {
+          orders.add(new OrderSpecifier<>(dir,player.losses.size()));
+        } else if (o.getProperty().equalsIgnoreCase("wins")) {
+          orders.add(new OrderSpecifier<>(dir, player.wins.size()));
+        } else if (o.getProperty().equalsIgnoreCase("totalMatches")) {
+          orders.add(new OrderSpecifier<>(dir, player.wins.size().add(player.losses.size())));
+        }
+         else {
+           orders.add(new OrderSpecifier<>(dir, entityPath.getString(o.getProperty())));
+        }
       }
 
       List<PlayerDto.Summary> result = query.orderBy(orders.toArray(new OrderSpecifier[]{})).fetch().stream().map(this::convertToSummary).toList();
@@ -197,9 +213,11 @@ public class PlayerService {
                 .grade(player.getGrade() != null ? convertGradeToSummary(player.getGrade()) : null)
                 .wins(player.getWins().size())
                 .losses(player.getLosses().size())
+                .race(player.getRace())
                 .totalMatches(player.getWins().size() + player.getLosses().size())
                 .clan(clanDto)
                 .status(player.getStatus())
+                .createdAt(player.getCreatedAt())
                 .build();
     }
 

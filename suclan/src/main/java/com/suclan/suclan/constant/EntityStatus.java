@@ -5,7 +5,6 @@ public enum EntityStatus {
   PENDING,
   RUNNING,
   REGISTERED,
-  MERGED,
   BANNED,
   DELETED,
   EXPIRED

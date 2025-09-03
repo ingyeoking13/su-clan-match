@@ -6,7 +6,7 @@ import { LoadingSpinner } from './ui/LoadingSpinner';
 import { ErrorMessage } from './ui/ErrorMessage';
 import { useApi, useApiMutation } from '@/hooks/useApi';
 import { playerApi, clanApi, gradeApi } from '@/lib/api';
-import { Player, Clan, Grade } from '@/types';
+import { Player, Clan, Grade, PaginatedResponse } from '@/types';
 import { User, Award, Users } from 'lucide-react';
 
 interface PlayerFormProps {
@@ -25,6 +25,7 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
   const isEditMode = !!player;
   const [formData, setFormData] = useState({
     nickname: player?.nickname || '',
+    race: player?.race || '',
     gradeId: player?.grade?.id || '',
     clanName: player?.clan?.name || player?.clanName || ''
   });
@@ -34,10 +35,11 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
     isOpen ? () => clanApi.getAll(false) : null,
     [isOpen]
   );
-  const { data: grades, loading: gradesLoading } = useApi<Grade[]>(
+  const { data: gradesResponse, loading: gradesLoading } = useApi<PaginatedResponse<Grade>>(
     isOpen ? () => gradeApi.getAll() : null,
     [isOpen]
   );
+  const grades = gradesResponse?.content || [];
   
   const { mutate, loading, error } = useApiMutation<Player>();
 
@@ -46,12 +48,14 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
     if (player) {
       setFormData({
         nickname: player.nickname,
+        race: player.race || '',
         gradeId: player.grade?.id || '',
         clanName: player.clan?.name || player.clanName || ''
       });
     } else {
       setFormData({
         nickname: '',
+        race: '',
         gradeId: '',
         clanName: ''
       });
@@ -70,7 +74,8 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
     try {
       const submitData = {
         nickname: formData.nickname.trim(),
-        gradeId: formData.gradeId ? parseInt(formData.gradeId) : undefined,
+        race: formData.race.trim() || undefined,
+        gradeId: formData.gradeId ? parseInt(formData.gradeId as string) : undefined,
         clanName: formData.clanName || undefined
       };
 
@@ -86,6 +91,7 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
       // 폼 초기화
       setFormData({
         nickname: '',
+        race: '',
         gradeId: '',
         clanName: ''
       });
@@ -126,6 +132,25 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
             required
             disabled={loading}
           />
+        </div>
+
+        {/* 종족 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <User className="h-4 w-4 inline mr-2" />
+            종족
+          </label>
+          <select
+            value={formData.race}
+            onChange={(e) => handleInputChange('race', e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            disabled={loading}
+          >
+            <option value="">종족 선택 (선택사항)</option>
+            <option value="TERRAN">TERRAN</option>
+            <option value="PROTOSS">PROTOSS</option>
+            <option value="ZERG">ZERG</option>
+          </select>
         </div>
 
         {/* 등급 선택 */}

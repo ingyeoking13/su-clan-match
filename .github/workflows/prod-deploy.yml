@@ -9,7 +9,9 @@ on:
 env:
   REGION: 'asia-northeast3'
   SERVICE: 'suclan-back'
-  IMAGE: 'gaelim/suclan-back'
+  FRONT_SERVICE: 'suclan-front'
+  BACK_IMAGE: 'gaelim/suclan-back'
+  FRONT_IMAGE: 'gaelim/suclan-front'
 
 jobs:
   build:
@@ -29,7 +31,9 @@ jobs:
       - name: Docker build and push
         run: |
           cd suclan
-          docker build . -t ${{ env.IMAGE }}:${{ github.ref_name }} -f Dockerfile --no-cache --push --build-arg DB_USER=${{ secrets.DB_USER }} --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          docker build . -t ${{ env.BACK_IMAGE }}:${{ github.ref_name }} -f Dockerfile --no-cache --push --build-arg DB_USER=${{ secrets.DB_USER }} --build-arg DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          cd ../front
+          docker build . -t ${{ env.FRONT_IMAGE }}:${{ github.ref_name }} -f Dockerfile --no-cache --push
 
       - name: Set output
         id: set_output
@@ -62,10 +66,18 @@ jobs:
       - name: 'Deploy to Cloud Run'
         uses: 'google-github-actions/deploy-cloudrun@v2'
         with:
-          service: ${{ env.SERVICE }}
           region: ${{ env.REGION }}
+          service: ${{ env.BACK_SERVICE }}
           # NOTE: If using a pre-built image, update the image name below:
-          image: ${{ env.IMAGE }}:${{ github.ref_name }}
+          image: ${{ env.BACK_IMAGE }}:${{ github.ref_name }}
       # If required, use the Cloud Run URL output in later steps
+      - name: 'Deploy to Cloud Run Front'
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          region: ${{ env.REGION }}
+          service: ${{ env.FRONT_SERVICE }}
+          # NOTE: If using a pre-built image, update the image name below:
+          image: ${{ env.FRONT_IMAGE }}:${{ github.ref_name }}
+    # If required, use the Cloud Run URL output in later steps
       - name: 'Show output'
         run: echo ${{ steps.deploy.outputs.url }}

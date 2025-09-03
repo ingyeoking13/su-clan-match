@@ -7,6 +7,7 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   className?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export const Modal: React.FC<ModalProps> = ({ 
@@ -14,7 +15,8 @@ export const Modal: React.FC<ModalProps> = ({
   onClose, 
   title, 
   children, 
-  className = '' 
+  className = '',
+  size = 'md'
 }) => {
   if (!isOpen) return null;
 
@@ -28,7 +30,12 @@ export const Modal: React.FC<ModalProps> = ({
       
       {/* 모달 컨텐츠 */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className={`relative bg-white rounded-lg shadow-xl w-full max-w-md ${className}`}>
+        <div className={`relative bg-white rounded-lg shadow-xl w-full ${
+          size === 'sm' ? 'max-w-sm' :
+          size === 'md' ? 'max-w-md' :
+          size === 'lg' ? 'max-w-2xl' :
+          size === 'xl' ? 'max-w-4xl' : 'max-w-md'
+        } ${className}`}>
           {/* 헤더 */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">{title}</h2>

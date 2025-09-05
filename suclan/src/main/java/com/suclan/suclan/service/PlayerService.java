@@ -61,8 +61,18 @@ public class PlayerService {
                 .grade(grade)
                 .build();
 
-        Player savedPlayer = playerRepository.save(player);
-        return convertToResponse(savedPlayer);
+      if (request.getClanName() != null) {
+        Clan clan = clanRepository.findByName(request.getClanName()).orElseThrow(
+            () -> new ResourceNotFoundException("Clan not found with name: " + request.getClanName())
+        );
+        PlayerClan pc = PlayerClan.builder()
+            .player(player)
+            .clan(clan)
+            .build();
+        playerClanRepository.save(pc);
+      }
+      Player savedPlayer = playerRepository.save(player);
+      return convertToResponse(savedPlayer);
     }
 
     @Transactional

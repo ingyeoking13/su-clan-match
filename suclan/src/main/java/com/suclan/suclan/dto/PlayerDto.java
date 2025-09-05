@@ -19,6 +19,7 @@ public class PlayerDto {
         private String nickname;
         private Race race;
         private Long gradeId;
+        private String clanName;
     }
 
     @Data

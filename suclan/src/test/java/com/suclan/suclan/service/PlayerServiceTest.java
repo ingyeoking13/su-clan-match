@@ -80,7 +80,7 @@ class PlayerServiceTest {
         Long gradeId = 1L;
         PlayerDto.CreateRequest request = PlayerDto.CreateRequest.builder()
                 .nickname("테스트플레이어")
-                .gradeId(gradeId)
+                .gradeName(gradeId)
                 .build();
 
         Grade grade = Grade.builder()
@@ -124,7 +124,7 @@ class PlayerServiceTest {
         Long gradeId = 999L;
         PlayerDto.CreateRequest request = PlayerDto.CreateRequest.builder()
                 .nickname("테스트플레이어")
-                .gradeId(gradeId)
+                .gradeName(gradeId)
                 .build();
 
         when(gradeRepository.findById(gradeId)).thenReturn(Optional.empty());
@@ -229,7 +229,7 @@ class PlayerServiceTest {
         
         PlayerDto.UpdateRequest request = PlayerDto.UpdateRequest.builder()
                 .nickname("업데이트된플레이어")
-                .gradeId(newGradeId)
+                .gradeName(newGradeId)
                 .status(EntityStatus.RUNNING)
                 .build();
 

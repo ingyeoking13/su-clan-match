@@ -18,7 +18,7 @@ public class PlayerDto {
     public static class CreateRequest {
         private String nickname;
         private Race race;
-        private Long gradeId;
+        private String gradeName;
         private String clanName;
     }
 
@@ -28,7 +28,7 @@ public class PlayerDto {
     @AllArgsConstructor
     public static class UpdateRequest {
         private String nickname;
-        private Long gradeId;
+        private String gradeName;
         private Race race;
         private EntityStatus status;
         private String clanName;

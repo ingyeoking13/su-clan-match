@@ -48,7 +48,7 @@ class PlayerControllerTest {
         // Given
         PlayerDto.CreateRequest request = PlayerDto.CreateRequest.builder()
                 .nickname("테스트플레이어")
-                .gradeId(1L)
+                .gradeName(1L)
                 .build();
 
         GradeDto.Summary gradeDto = GradeDto.Summary.builder()
@@ -197,7 +197,7 @@ class PlayerControllerTest {
         Long playerId = 1L;
         PlayerDto.UpdateRequest request = PlayerDto.UpdateRequest.builder()
                 .nickname("업데이트된플레이어")
-                .gradeId(2L)
+                .gradeName(2L)
                 .status(EntityStatus.RUNNING)
                 .build();
 

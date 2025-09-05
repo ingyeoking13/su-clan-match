@@ -43,3 +43,11 @@ server:
 
 batch:
   enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /api/docs
+    operationsSorter: method
+    tagsSorter: alpha
+
+  use-fqn: true

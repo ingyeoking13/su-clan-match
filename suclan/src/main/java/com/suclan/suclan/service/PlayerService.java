@@ -46,9 +46,9 @@ public class PlayerService {
     @Transactional
     public PlayerDto.Response createPlayer(PlayerDto.CreateRequest request) {
         Grade grade = null;
-        if (request.getGradeId() != null) {
-            grade = gradeRepository.findById(request.getGradeId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Grade not found with id: " + request.getGradeId()));
+        if (request.getGradeName() != null) {
+            grade = gradeRepository.findByName(request.getGradeName())
+                    .orElseThrow(() -> new ResourceNotFoundException("Grade not found with id: " + request.getGradeName()));
         }
 
         if (playerRepository.existsByNickname(request.getNickname())) {
@@ -83,9 +83,9 @@ public class PlayerService {
         if (request.getNickname() != null) {
             player.setNickname(request.getNickname());
         }
-        if (request.getGradeId() != null) {
-            Grade grade = gradeRepository.findById(request.getGradeId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Grade not found with id: " + request.getGradeId()));
+        if (request.getGradeName() != null) {
+            Grade grade = gradeRepository.findByName(request.getGradeName())
+                    .orElseThrow(() -> new ResourceNotFoundException("Grade not found with id: " + request.getGradeName()));
             player.setGrade(grade);
         }
         if (request.getStatus() != null) {

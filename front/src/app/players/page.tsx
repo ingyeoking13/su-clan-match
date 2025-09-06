@@ -488,9 +488,9 @@ export default function PlayersPage() {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        {(player.clan?.name || player.clanName) ? (
+                        {(player.clan?.name || '없음') ? (
                           <span className="text-blue-600 font-medium">
-                            {player.clan?.name || player.clanName}
+                            {player.clan?.name || '없음'}
                           </span>
                         ) : (
                           <span className="text-gray-400 text-sm">-</span>

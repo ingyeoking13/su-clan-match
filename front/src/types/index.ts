@@ -40,7 +40,6 @@ export interface Player extends BaseEntity {
     foundingDate: string | null;
     memberCount: number;
   } | null;
-  clanName?: string; // 백워드 호환성을 위해 유지
   totalMatches?: number;
   wins?: number;
   losses?: number;

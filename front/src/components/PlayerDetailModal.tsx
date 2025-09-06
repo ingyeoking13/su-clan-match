@@ -47,7 +47,7 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
 
   // 백엔드 API 응답과 목업 데이터 호환성을 위한 헬퍼 함수들
   const getPlayerClanName = (player: Player) => {
-    return player.clan?.name || player.clanName || null;
+    return player.clan?.name || null;
   };
 
   const getPlayerStats = (player: Player) => {

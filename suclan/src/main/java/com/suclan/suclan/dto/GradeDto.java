@@ -50,6 +50,8 @@ public class GradeDto {
     public static class Summary {
         private Long id;
         private String name;
+        private String description;
         private EntityStatus status;
+        private LocalDateTime createdAt;
     }
 }

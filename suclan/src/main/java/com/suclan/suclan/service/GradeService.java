@@ -90,8 +90,10 @@ public class GradeService {
     private GradeDto.Summary convertToSummary(Grade grade) {
         return GradeDto.Summary.builder()
                 .id(grade.getId())
+                .description(grade.getDescription())
                 .name(grade.getName())
                 .status(grade.getStatus())
+                .createdAt(grade.getCreatedAt())
                 .build();
     }
 }

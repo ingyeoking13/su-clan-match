@@ -25,8 +25,8 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
   const [formData, setFormData] = useState({
     nickname: player?.nickname || '',
     race: player?.race || '',
-    gradeId: player?.grade?.id?.toString() || '',
-    clanName: player?.clan?.name || player?.clanName || ''
+    gradeName: player?.grade?.name || '',
+    clanName: player?.clan?.name || ''
   });
 
   // 클랜과 등급 목록 가져오기 (모달이 열려있을 때만)
@@ -48,8 +48,8 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
       setFormData({
         nickname: player.nickname,
         race: player.race || '',
-        gradeId: player.grade?.id?.toString() || '',
-        clanName: player.clan?.name || player.clanName || ''
+        gradeName: player.grade?.name || '',
+        clanName: player.clan?.name || ''
       });
     }
   }, [player]);
@@ -65,7 +65,7 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
       const submitData = {
         nickname: formData.nickname.trim(),
         race: formData.race.trim() || undefined,
-        gradeId: formData.gradeId ? parseInt(formData.gradeId) : undefined,
+        gradeName: formData.gradeName.trim() || undefined,
         clanName: formData.clanName || undefined
       };
 
@@ -90,8 +90,8 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
       setFormData({
         nickname: player.nickname,
         race: player.race || '',
-        gradeId: player.grade?.id?.toString() || '',
-        clanName: player.clanName || ''
+        gradeName: player.grade?.name || '',
+        clanName: player.clan?.name || ''
       });
     }
     onClose();
@@ -117,7 +117,7 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
               <div>
                 <h3 className="font-medium text-gray-900">{player.nickname}</h3>
                 <p className="text-sm text-gray-500">
-                  {player.grade?.name || '등급 없음'} • {player.clanName || '소속 클랜 없음'}
+                  {player.grade?.name || '등급 없음'} • {player.clan?.name || '소속 클랜 없음'}
                 </p>
               </div>
             </div>
@@ -172,7 +172,7 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
             </div>
           ) : (
             <select
-              value={formData.gradeId}
+              value={formData.gradeName}
               onChange={(e) => handleInputChange('gradeId', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               disabled={loading}
@@ -235,21 +235,21 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
                   </span>
                 </div>
               )}
-              {formData.gradeId !== (player.grade?.id?.toString() || '') && (
+              {formData.gradeName !== (player.grade?.name || '') && (
                 <div className="flex justify-between">
                   <span className="text-blue-700">등급:</span>
                   <span className="text-blue-900">
                     {player.grade?.name || '없음'} → {
-                      grades?.find(g => g.id.toString() === formData.gradeId)?.name || '없음'
+                      grades?.find(g => g.id.toString() === formData.gradeName)?.name || '없음'
                     }
                   </span>
                 </div>
               )}
-              {formData.clanName !== (player.clanName || '') && (
+              {formData.clanName !== (player.clan?.name || '') && (
                 <div className="flex justify-between">
                   <span className="text-blue-700">클랜:</span>
                   <span className="text-blue-900">
-                    {player.clanName || '없음'} → {formData.clanName || '없음'}
+                    {player.clan?.name || '없음'} → {formData.clanName || '없음'}
                   </span>
                 </div>
               )}

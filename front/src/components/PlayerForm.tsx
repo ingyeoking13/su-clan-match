@@ -27,7 +27,7 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
     nickname: player?.nickname || '',
     race: player?.race || '',
     gradeId: player?.grade?.id || '',
-    clanName: player?.clan?.name || player?.clanName || ''
+    clanName: player?.clan?.name || ''
   });
 
   // 클랜과 등급 목록 가져오기 (모달이 열려있을 때만)
@@ -50,7 +50,7 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
         nickname: player.nickname,
         race: player.race || '',
         gradeId: player.grade?.id || '',
-        clanName: player.clan?.name || player.clanName || ''
+        clanName: player.clan?.name || ''
       });
     } else {
       setFormData({

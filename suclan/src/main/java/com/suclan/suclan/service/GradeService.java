@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -19,6 +21,11 @@ public class GradeService {
 
     @Transactional
     public GradeDto.Response createGrade(GradeDto.CreateRequest request) {
+        Optional<Grade> g = gradeRepository.findByName(request.getName());
+        if (g.isPresent()) {
+          return convertToResponse(g.get());
+        }
+
         Grade grade = Grade.builder()
                 .name(request.getName())
                 .description(request.getDescription())

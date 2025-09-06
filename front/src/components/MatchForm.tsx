@@ -134,9 +134,6 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
       newErrors.playerTwoNickname = '플레이어 1과 다른 닉네임을 입력해주세요.';
     }
 
-    if (!formData.mapName.trim()) {
-      newErrors.mapName = '맵 이름을 입력해주세요.';
-    }
 
     // 승자 검증 (선택된 플레이어만 가능)
     if (formData.winnerId && formData.winnerId !== formData.playerOneId && formData.winnerId !== formData.playerTwoId) {
@@ -163,7 +160,7 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
         playerOneRace: formData.playerOneRace || null,
         playerTwoRace: formData.playerTwoRace || null,
         winnerId: formData.winnerId || undefined,
-        mapName: formData.mapName,
+        mapName: formData.mapName.trim() || undefined,
         description: formData.description,
         contestId: formData.contestId || undefined,
         streamingUrl: formData.streamingUrl || undefined,
@@ -383,9 +380,10 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
               disabled={loading}
             >
               <option value="">종족 선택 (선택사항)</option>
-              <option value="TERRAN">TERRAN</option>
-              <option value="PROTOSS">PROTOSS</option>
-              <option value="ZERG">ZERG</option>
+              <option value="TERRAN">테란 (TERRAN)</option>
+              <option value="PROTOSS">프로토스 (PROTOSS)</option>
+              <option value="ZERG">저그 (ZERG)</option>
+              <option value="RANDOM">랜덤 (RANDOM)</option>
             </select>
           </div>
 
@@ -450,10 +448,10 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
               disabled={loading}
             >
               <option value="">종족 선택 (선택사항)</option>
-              <option value="TERRAN">TERRAN</option>
-              <option value="PROTOSS">PROTOSS</option>
-              <option value="ZERG">ZERG</option>
-              <option value="RANDOM">RANDOM</option>
+              <option value="TERRAN">테란 (TERRAN)</option>
+              <option value="PROTOSS">프로토스 (PROTOSS)</option>
+              <option value="ZERG">저그 (ZERG)</option>
+              <option value="RANDOM">랜덤 (RANDOM)</option>
             </select>
           </div>
         </div>
@@ -501,7 +499,7 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
         <div>
           <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
             <MapPin className="h-4 w-4 mr-1" />
-            맵 이름 *
+            맵 이름 (선택사항)
           </label>
           <input
             type="text"
@@ -511,7 +509,6 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
               errors.mapName ? 'border-red-500' : 'border-gray-300'
             }`}
             placeholder="예: 투혼, 폴리포이드, 라데온"
-            required
           />
           {errors.mapName && (
             <p className="mt-1 text-sm text-red-600">{errors.mapName}</p>

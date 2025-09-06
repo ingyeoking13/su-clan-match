@@ -44,9 +44,10 @@ public class MatchController {
     @GetMapping("/player/{playerId}")
     public ResponseEntity<Page<MatchDto.Summary>> getMatchesByPlayer(
             @PathVariable Long playerId,
-            @PageableDefault Pageable pageable
+            @PageableDefault Pageable pageable,
+            @ModelAttribute MatchDto.PlayerSpecificCondition condition
     ) {
-        Page<MatchDto.Summary> matches = matchService.getMatchesByPlayer(playerId, pageable);
+        Page<MatchDto.Summary> matches = matchService.getMatchesByPlayer(playerId, condition, pageable);
         return ResponseEntity.ok(matches);
     }
 

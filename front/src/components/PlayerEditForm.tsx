@@ -46,7 +46,7 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
   React.useEffect(() => {
     if (player) {
       setFormData({
-        nickname: player.nickname,
+        nickname: player.nickname || '',
         race: player.race || '',
         gradeName: player.grade?.name || '',
         clanName: player.clan?.name || ''
@@ -154,10 +154,10 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
             disabled={loading}
           >
             <option value="">종족 선택 (선택사항)</option>
-            <option value="TERRAN">TERRAN</option>
-            <option value="PROTOSS">PROTOSS</option>
-            <option value="ZERG">ZERG</option>
-            <option value="RANDOM">RANDOM</option>
+            <option value="TERRAN">테란 (TERRAN)</option>
+            <option value="PROTOSS">프로토스 (PROTOSS)</option>
+            <option value="ZERG">저그 (ZERG)</option>
+            <option value="RANDOM">랜덤 (RANDOM)</option>
           </select>
         </div>
 
@@ -174,13 +174,13 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
           ) : (
             <select
               value={formData.gradeName}
-              onChange={(e) => handleInputChange('gradeId', e.target.value)}
+              onChange={(e) => handleInputChange('gradeName', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               disabled={loading}
             >
               <option value="">등급 선택 (선택사항)</option>
               {(grades || []).map((grade) => (
-                <option key={grade.id} value={grade.id}>
+                <option key={grade.id} value={grade.name}>
                   {grade.name}
                 </option>
               ))}
@@ -240,9 +240,7 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
                 <div className="flex justify-between">
                   <span className="text-blue-700">등급:</span>
                   <span className="text-blue-900">
-                    {player.grade?.name || '없음'} → {
-                      grades?.find(g => g.id.toString() === formData.gradeName)?.name || '없음'
-                    }
+                    {player.grade?.name || '없음'} → {formData.gradeName || '없음'}
                   </span>
                 </div>
               )}

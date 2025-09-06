@@ -159,8 +159,13 @@ export const playerApi = {
     return apiClient.get<PaginatedResponse<Player>>(`/players?${params.toString()}`);
   },
 
-  getById: (id: number) => {
+  getById: (id: string | number) => {
     return apiClient.get<Player>(`/players/${id}`);
+  },
+  
+  // 선수별 경기 기록 조회
+  getMatches: (id: string | number) => {
+    return apiClient.get<PaginatedResponse<Match>>(`/matches/player/${id}`);
   },
   create: (data: Partial<Player> & { gradeId?: number }) => {
     return apiClient.post<Player>('/players', data);

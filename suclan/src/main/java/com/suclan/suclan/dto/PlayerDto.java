@@ -41,6 +41,7 @@ public class PlayerDto {
     public static class Response {
         private Long id;
         private String nickname;
+        private Race race;
         private GradeDto.Summary grade;
         private ClanDto.Summary clan;
         private EntityStatus status;

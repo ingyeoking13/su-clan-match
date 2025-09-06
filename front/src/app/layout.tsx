@@ -6,7 +6,7 @@ import { Sidebar } from '@/components/Sidebar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Suclan Dashboard',
+  title: 'S.U Clan Dashboard',
   description: '게임 클랜 관리 대시보드',
 }
 

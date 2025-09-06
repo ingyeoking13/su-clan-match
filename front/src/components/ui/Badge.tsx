@@ -2,8 +2,9 @@ import React from 'react';
 import { EntityStatus } from '@/types';
 
 interface BadgeProps {
-  status: EntityStatus;
+  status?: EntityStatus;
   className?: string;
+  children?: React.ReactNode;
 }
 
 const statusColors = {
@@ -26,7 +27,21 @@ const statusLabels = {
   [EntityStatus.EXPIRED]: '만료됨',
 };
 
-export const Badge: React.FC<BadgeProps> = ({ status, className = '' }) => {
+export const Badge: React.FC<BadgeProps> = ({ status, className = '', children }) => {
+  // If children is provided, use it as custom content
+  if (children) {
+    return (
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${className}`}
+      >
+        {children}
+      </span>
+    );
+  }
+
+  // Otherwise, use the status-based badge
+  if (!status) return null;
+  
   return (
     <span
       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColors[status]} ${className}`}

@@ -185,10 +185,44 @@ public class MatchService {
     }
 
     @Transactional
-    public Page<MatchDto.Summary> getMatchesByPlayer(Long playerId, Pageable pageable) {
+    public Page<MatchDto.Summary> getMatchesByPlayer(Long playerId, MatchDto.PlayerSpecificCondition condition, Pageable pageable) {
 
-      return matchRepository.findByPlayerOneIdOrPlayerTwoId(playerId, playerId, pageable)
-                .map(this::convertToSummary);
+      BooleanExpression whereCondition =
+          match.playerOne.id.eq(playerId).or(match.playerTwo.id.eq(playerId));
+
+      if (StringUtils.hasText(condition.getOpponentNickname())) {
+        whereCondition.and(
+            match.playerOne.nickname.eq(condition.getOpponentNickname())
+                .or(match.playerTwo.nickname.eq(condition.getOpponentNickname()))
+        );
+      }
+
+      if (StringUtils.hasText(condition.getMapName())) {
+        whereCondition = whereCondition.and(match.mapName.like("%" + condition.getMapName() + "%"));
+      }
+
+      if (condition.getStartedAt() != null) {
+        whereCondition = whereCondition.and(match.matchTime.goe(condition.getStartedAt()));
+      }
+
+      if (condition.getEndedAt() != null) {
+        whereCondition = whereCondition.and(match.matchTime.loe(condition.getEndedAt()));
+      }
+
+      List<MatchDto.Summary> result = jpaQueryFactory.selectFrom(match)
+          .where(whereCondition)
+          .fetch()
+          .stream().map(
+              this::convertToSummary
+          ).toList();
+
+      long total = jpaQueryFactory
+          .select(match.count())
+          .from(match)
+          .where(whereCondition)
+          .fetchOne();
+
+      return new PageImpl<>(result, pageable, total);
     }
 
     @Transactional
@@ -223,7 +257,9 @@ public class MatchService {
                 .playerOneRace(match.getPlayerOneRace())
                 .playerTwoRace(match.getPlayerTwoRace())
                 .winner(match.getWinner() != null ? convertPlayerToSummary(match.getWinner()) : null)
+                .streamingUrl(match.getStreamingUrl())
                 .mapName(match.getMapName())
+                .matchTime(match.getMatchTime())
                 .createdAt(match.getCreatedAt())
                 .build();
     }

@@ -312,6 +312,7 @@ export default function MatchesPage() {
                             match.playerOneRace === 'TERRAN' ? 'bg-blue-100 text-blue-800' :
                             match.playerOneRace === 'ZERG' ? 'bg-purple-100 text-purple-800' :
                             match.playerOneRace === 'PROTOSS' ? 'bg-green-100 text-green-800' :
+                            match.playerOneRace === 'RANDOM' ? 'bg-orange-100 text-orange-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
                             {match.playerOneRace}
@@ -341,6 +342,7 @@ export default function MatchesPage() {
                             match.playerTwoRace === 'TERRAN' ? 'bg-blue-100 text-blue-800' :
                             match.playerTwoRace === 'ZERG' ? 'bg-purple-100 text-purple-800' :
                             match.playerTwoRace === 'PROTOSS' ? 'bg-green-100 text-green-800' :
+                            match.playerTwoRace === 'RANDOM' ? 'bg-orange-100 text-orange-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
                             {match.playerTwoRace}

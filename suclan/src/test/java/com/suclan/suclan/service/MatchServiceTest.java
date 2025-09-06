@@ -326,7 +326,7 @@ class MatchServiceTest {
                 .thenReturn(matchPage);
 
         // When
-        Page<MatchDto.Summary> result = matchService.getMatchesByPlayer(playerId, pageable);
+        Page<MatchDto.Summary> result = matchService.getMatchesByPlayer(playerId, MatchDto.PlayerSpecificCondition.builder().build(), pageable);
 
         // Then
         assertThat(result.getContent()).hasSize(2);

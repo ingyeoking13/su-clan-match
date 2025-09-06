@@ -249,7 +249,7 @@ class MatchControllerTest {
                 1
         );
 
-        when(matchService.getMatchesByPlayer(eq(playerId), any())).thenReturn(matchPage);
+        when(matchService.getMatchesByPlayer(eq(playerId), any(), any())).thenReturn(matchPage);
 
         // When & Then
         mockMvc.perform(get("/api/matches/player/{playerId}", playerId)
@@ -262,7 +262,7 @@ class MatchControllerTest {
                 .andExpect(jsonPath("$.content[0].winner.nickname").value("플레이어1"))
                 .andExpect(jsonPath("$.totalElements").value(1));
 
-        verify(matchService, times(1)).getMatchesByPlayer(eq(playerId), any());
+        verify(matchService, times(1)).getMatchesByPlayer(eq(playerId), any(), any());
     }
 
     @Test

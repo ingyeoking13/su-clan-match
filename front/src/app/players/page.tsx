@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { PlayerForm } from '@/components/PlayerForm';
-import { PlayerDetailModal } from '@/components/PlayerDetailModal';
+import { useRouter } from 'next/navigation';
 import { PlayerEditForm } from '@/components/PlayerEditForm';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useApi, useApiMutation } from '@/hooks/useApi';
@@ -15,12 +15,12 @@ import { Player, EntityStatus, PaginatedResponse } from '@/types';
 import { UserCheck, Trophy, Target, Plus, Eye, EyeOff, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, Search, X } from 'lucide-react';
 
 export default function PlayersPage() {
+  const router = useRouter();
   const [showDeleted, setShowDeleted] = useState(false);
   const [currentPage, setCurrentPage] = useState(0); // Spring은 0부터 시작
   const [pageSize, setPageSize] = useState(10);
   // 다중 정렬 상태
   const [sorts, setSorts] = useState<Array<{ field: string; direction: 'asc' | 'desc' }>>([
-    { field: 'createdAt', direction: 'desc' }
   ]);
   
   // 검색 상태
@@ -123,11 +123,9 @@ export default function PlayersPage() {
 
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
-  const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   
   const calculateWinRate = (winCount: number = 0, matchCount: number = 0) => {
     if (matchCount === 0) return 0;
@@ -136,21 +134,14 @@ export default function PlayersPage() {
 
   // 핸들러 함수들
   const handlePlayerClick = (player: Player) => {
-    setSelectedPlayerId(player.id);
-    setIsDetailModalOpen(true);
+    router.push(`/players/${player.id}`);
   };
 
   const handleEdit = (player: Player) => {
     setSelectedPlayer(player);
-    setIsDetailModalOpen(false);
     setIsEditModalOpen(true);
   };
 
-  const handleDeleteClick = (player: Player) => {
-    setSelectedPlayer(player);
-    setIsDetailModalOpen(false);
-    setIsDeleteDialogOpen(true);
-  };
 
   const handleDeleteConfirm = async () => {
     if (!selectedPlayer) return;
@@ -167,8 +158,6 @@ export default function PlayersPage() {
 
   const handleModalClose = () => {
     setSelectedPlayer(null);
-    setSelectedPlayerId(null);
-    setIsDetailModalOpen(false);
     setIsEditModalOpen(false);
     setIsDeleteDialogOpen(false);
   };
@@ -650,14 +639,6 @@ export default function PlayersPage() {
         }}
       />
 
-      {/* 선수 상세보기 모달 */}
-      <PlayerDetailModal
-        isOpen={isDetailModalOpen}
-        onClose={handleModalClose}
-        playerId={selectedPlayerId}
-        onEdit={handleEdit}
-        onDelete={handleDeleteClick}
-      />
 
       {/* 선수 수정 모달 */}
       <PlayerEditForm

@@ -74,8 +74,10 @@ public class MatchDto {
         private Race playerOneRace;
         private Race playerTwoRace;
         private PlayerDto.Summary winner;
+        private String streamingUrl;
         private String mapName;
         private LocalDateTime createdAt;
+        private LocalDateTime matchTime;
     }
 
   @Data
@@ -85,6 +87,18 @@ public class MatchDto {
   public static class SearchCondition {
     private String playerOneNickname;
     private String playerTwoNickname;
+    private String mapName;
+    private LocalDateTime startedAt;
+    private LocalDateTime endedAt;
+    private boolean includeDeleted;
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class PlayerSpecificCondition {
+    private String opponentNickname;
     private String mapName;
     private LocalDateTime startedAt;
     private LocalDateTime endedAt;

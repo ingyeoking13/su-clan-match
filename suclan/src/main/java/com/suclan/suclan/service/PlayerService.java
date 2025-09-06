@@ -186,6 +186,7 @@ public class PlayerService {
         return PlayerDto.Response.builder()
                 .id(player.getId())
                 .nickname(player.getNickname())
+                .race(player.getRace())
                 .grade(player.getGrade() != null ? convertGradeToSummary(player.getGrade()) : null)
                 .clan(
                     player.getPlayerClans().isEmpty() ? null :

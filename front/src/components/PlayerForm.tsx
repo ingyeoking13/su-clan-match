@@ -26,7 +26,7 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
   const [formData, setFormData] = useState({
     nickname: player?.nickname || '',
     race: player?.race || '',
-    gradeId: player?.grade?.id || '',
+    gradeName: player?.grade?.name || '',
     clanName: player?.clan?.name || ''
   });
 
@@ -49,14 +49,14 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
       setFormData({
         nickname: player.nickname,
         race: player.race || '',
-        gradeId: player.grade?.id || '',
+        gradeName: player.grade?.name || '',
         clanName: player.clan?.name || ''
       });
     } else {
       setFormData({
         nickname: '',
         race: '',
-        gradeId: '',
+        gradeName: '',
         clanName: ''
       });
     }
@@ -75,7 +75,7 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
       const submitData = {
         nickname: formData.nickname.trim(),
         race: formData.race.trim() || undefined,
-        gradeId: formData.gradeId ? parseInt(formData.gradeId as string) : undefined,
+        gradeName: formData.gradeName.trim() || undefined,
         clanName: formData.clanName || undefined
       };
 
@@ -92,7 +92,7 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
       setFormData({
         nickname: '',
         race: '',
-        gradeId: '',
+        gradeName: '',
         clanName: ''
       });
     } catch (error) {
@@ -147,9 +147,10 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
             disabled={loading}
           >
             <option value="">종족 선택 (선택사항)</option>
-            <option value="TERRAN">TERRAN</option>
-            <option value="PROTOSS">PROTOSS</option>
-            <option value="ZERG">ZERG</option>
+            <option value="TERRAN">테란 (TERRAN)</option>
+            <option value="PROTOSS">프로토스 (PROTOSS)</option>
+            <option value="ZERG">저그 (ZERG)</option>
+            <option value="RANDOM">랜덤 (RANDOM)</option>
           </select>
         </div>
 
@@ -165,14 +166,14 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
             </div>
           ) : (
             <select
-              value={formData.gradeId}
-              onChange={(e) => handleInputChange('gradeId', e.target.value)}
+              value={formData.gradeName}
+              onChange={(e) => handleInputChange('gradeName', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               disabled={loading}
             >
               <option value="">등급 선택 (선택사항)</option>
               {(grades || []).map((grade) => (
-                <option key={grade.id} value={grade.id}>
+                <option key={grade.id} value={grade.name}>
                   {grade.name}
                 </option>
               ))}

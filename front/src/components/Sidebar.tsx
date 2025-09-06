@@ -31,7 +31,7 @@ export const Sidebar: React.FC = () => {
   return (
     <div className="flex flex-col w-64 bg-gray-900">
       <div className="flex items-center justify-center h-16 px-4 bg-gray-800">
-        <h1 className="text-xl font-bold text-white">Suclan Dashboard</h1>
+        <h1 className="text-xl font-bold text-white">S.U Clan Dashboard</h1>
       </div>
       <div className="flex flex-col flex-1 overflow-y-auto">
         <nav className="flex-1 px-2 py-4 bg-gray-900">

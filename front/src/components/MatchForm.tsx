@@ -453,6 +453,7 @@ export function MatchForm({ isOpen, onClose, onSuccess, match }: MatchFormProps)
               <option value="TERRAN">TERRAN</option>
               <option value="PROTOSS">PROTOSS</option>
               <option value="ZERG">ZERG</option>
+              <option value="RANDOM">RANDOM</option>
             </select>
           </div>
         </div>

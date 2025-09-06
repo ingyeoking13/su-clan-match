@@ -248,6 +248,7 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
                 player.race === 'TERRAN' ? 'bg-blue-50' :
                 player.race === 'ZERG' ? 'bg-purple-50' :
                 player.race === 'PROTOSS' ? 'bg-green-50' :
+                player.race === 'RANDOM' ? 'bg-gray-50' :
                 'bg-gray-50'
               }`}>
                 <div className="flex items-center justify-between">
@@ -256,6 +257,7 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
                       player.race === 'TERRAN' ? 'text-blue-800' :
                       player.race === 'ZERG' ? 'text-purple-800' :
                       player.race === 'PROTOSS' ? 'text-green-800' :
+                      player.race === 'RANDOM' ? 'text-gray-800' :
                       'text-gray-800'
                     }`}>
                       {player.race}
@@ -264,6 +266,7 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
                       player.race === 'TERRAN' ? 'text-blue-600' :
                       player.race === 'ZERG' ? 'text-purple-600' :
                       player.race === 'PROTOSS' ? 'text-green-600' :
+                      player.race === 'RANDOM' ? 'text-gray-600' :
                       'text-gray-600'
                     }`}>
                       플레이어의 종족입니다.
@@ -273,12 +276,14 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
                     player.race === 'TERRAN' ? 'bg-blue-200' :
                     player.race === 'ZERG' ? 'bg-purple-200' :
                     player.race === 'PROTOSS' ? 'bg-green-200' :
+                    player.race === 'RANDOM' ? 'bg-gray-200' :
                     'bg-gray-200'
                   }`}>
                     <User className={`h-6 w-6 ${
                       player.race === 'TERRAN' ? 'text-blue-600' :
                       player.race === 'ZERG' ? 'text-purple-600' :
                       player.race === 'PROTOSS' ? 'text-green-600' :
+                      player.race === 'RANDOM' ? 'text-gray-600' :
                       'text-gray-600'
                     }`} />
                   </div>

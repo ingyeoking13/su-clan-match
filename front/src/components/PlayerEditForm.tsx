@@ -157,6 +157,7 @@ export const PlayerEditForm: React.FC<PlayerEditFormProps> = ({
             <option value="TERRAN">TERRAN</option>
             <option value="PROTOSS">PROTOSS</option>
             <option value="ZERG">ZERG</option>
+            <option value="RANDOM">RANDOM</option>
           </select>
         </div>
 

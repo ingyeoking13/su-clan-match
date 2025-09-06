@@ -19,6 +19,7 @@ import com.suclan.suclan.repository.GradeRepository;
 import com.suclan.suclan.repository.PlayerClanRepository;
 import com.suclan.suclan.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +36,7 @@ import static com.suclan.suclan.domain.QPlayer.player;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PlayerService {
 
     private final PlayerRepository playerRepository;
@@ -48,11 +50,15 @@ public class PlayerService {
         Grade grade = null;
         if (request.getGradeName() != null) {
             grade = gradeRepository.findByName(request.getGradeName())
-                    .orElseThrow(() -> new ResourceNotFoundException("Grade not found with id: " + request.getGradeName()));
+                .orElseThrow(() -> {
+                  log.error("{} not found", request.getGradeName());
+                return new ResourceNotFoundException("Grade not found with id: " + request.getGradeName());
+              });
         }
 
         if (playerRepository.existsByNickname(request.getNickname())) {
-            throw new IllegalArgumentException("이미 사용되고 있는 이름입니다. " + request.getNickname());
+          log.error("이미 사용되고 있는 이름입니다 {}", request.getNickname());
+          throw new IllegalArgumentException("이미 사용되고 있는 이름입니다. " + request.getNickname());
         }
 
         Player player = Player.builder()

@@ -139,7 +139,7 @@ export default function PlayerDetailPage() {
     switch (race.toUpperCase()) {
       case 'TERRAN': return 'text-blue-600 bg-blue-100';
       case 'ZERG': return 'text-purple-600 bg-purple-100';
-      case 'PROTOSS': return 'text-green-600 bg-green-100';
+      case 'PROTOSS': return 'text-teal-600 bg-teal-100';
       case 'RANDOM': return 'text-orange-600 bg-orange-100';
       default: return 'text-gray-600 bg-gray-100';
     }
@@ -323,20 +323,40 @@ export default function PlayerDetailPage() {
                   const opponent = isPlayerOne 
                     ? { nickname: match.playerTwo.nickname, race: match.playerTwoRace }
                     : { nickname: match.playerOne.nickname, race: match.playerOneRace };
+
+                  const me = isPlayerOne 
+                    ? { nickname: match.playerOne.nickname, race: match.playerOneRace }
+                    : { nickname: match.playerTwo.nickname, race: match.playerTwoRace };
+
                   const isWin = match.winner?.id === player.id;
                   
                   return (
-                    <div key={match.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div 
+                      key={match.id} 
+                      className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
+                      onClick={() => router.push(`/matches/${match.id}`)}
+                    >
                       <div className="flex items-center space-x-3">
                         <Badge className={`${isWin ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} border-0`}>
                           {isWin ? '승' : '패'}
                         </Badge>
                         <div>
-                          <div className="font-medium">vs {opponent.nickname}</div>
-                          <div className="flex items-center space-x-2 text-sm text-gray-500">
-                            <Badge className={`${getRaceColor(opponent.race)} border-0 text-xs`}>
-                              {getRaceText(opponent.race)}
-                            </Badge>
+                          <div className="flex items-center space-x-2 mb-1">
+                            <div className="flex items-center space-x-2">
+                              <Badge className={`${getRaceColor(me.race)} border-0 text-xs`}>
+                                {getRaceText(me.race)}
+                              </Badge>
+                              <span className="font-medium">{me.nickname}</span>
+                            </div>
+                            <span className="text-gray-400">vs</span>
+                            <div className="flex items-center space-x-2">
+                              <Badge className={`${getRaceColor(opponent.race)} border-0 text-xs`}>
+                                {getRaceText(opponent.race)}
+                              </Badge>
+                              <span className="font-medium">{opponent.nickname}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-1 text-sm text-gray-500">
                             <MapPin className="w-3 h-3" />
                             <span>{match.mapName}</span>
                           </div>

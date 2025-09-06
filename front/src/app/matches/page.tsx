@@ -2,22 +2,18 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { MatchForm } from '@/components/MatchForm';
-import { ConfirmDialog } from '@/components/ConfirmDialog';
-import { useApi, useApiMutation } from '@/hooks/useApi';
+import { useApi } from '@/hooks/useApi';
 import { matchApi } from '@/lib/api';
 import { Match, EntityStatus } from '@/types';
-import { Gamepad2, MapPin, Calendar, Trophy, Plus, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Gamepad2, MapPin, Trophy, Plus, ArrowUpDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function MatchesPage() {
+  const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  const [matchToDelete, setMatchToDelete] = useState<Match | null>(null);
   
   // 정렬 상태
   const [sorts, setSorts] = useState<Array<{ field: string; direction: 'asc' | 'desc' }>>([
@@ -27,8 +23,6 @@ export default function MatchesPage() {
     () => matchApi.getAll(sorts),
     [sorts]
   );
-  const { mutate: deleteMatch, loading: deleteLoading } = useApiMutation<void>();
-
   // 정렬 핸들러
   const handleSort = (field: string) => {
     setSorts(prevSorts => {
@@ -74,41 +68,6 @@ export default function MatchesPage() {
     );
   };
 
-  // 핸들러 함수들
-  const handleEditMatch = (match: Match) => {
-    setSelectedMatch(match);
-    setIsEditModalOpen(true);
-  };
-
-  const handleDeleteMatch = (match: Match) => {
-    setMatchToDelete(match);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!matchToDelete) return;
-
-    try {
-      await deleteMatch(() => matchApi.delete(matchToDelete.id));
-      refetch(); // 목록 새로고침
-      setIsDeleteDialogOpen(false);
-      setMatchToDelete(null);
-    } catch (error) {
-      console.error('경기 삭제 실패:', error);
-      // 에러 처리는 useApiMutation에서 자동으로 처리됨
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setIsDeleteDialogOpen(false);
-    setMatchToDelete(null);
-  };
-
-  const handleEditSuccess = () => {
-    refetch();
-    setIsEditModalOpen(false);
-    setSelectedMatch(null);
-  };
 
   const handleCreateSuccess = () => {
     refetch();
@@ -271,7 +230,6 @@ export default function MatchesPage() {
                       {getSortIcon('matchTime')}
                     </button>
                   </th>
-                  <th className="text-center py-4 px-4 font-medium text-gray-900">액션</th>
                 </tr>
               </thead>
               <tbody>
@@ -280,7 +238,7 @@ export default function MatchesPage() {
                     <tr 
                       key={match.id} 
                       className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => handleEditMatch(match)}
+                      onClick={() => router.push(`/matches/${match.id}`)}
                     >
                       {/* 경기 정보 */}
                       <td className="py-4 px-6">
@@ -311,7 +269,7 @@ export default function MatchesPage() {
                           <span className={`px-2 py-1 rounded text-xs font-medium ${
                             match.playerOneRace === 'TERRAN' ? 'bg-blue-100 text-blue-800' :
                             match.playerOneRace === 'ZERG' ? 'bg-purple-100 text-purple-800' :
-                            match.playerOneRace === 'PROTOSS' ? 'bg-green-100 text-green-800' :
+                            match.playerOneRace === 'PROTOSS' ? 'bg-teal-100 text-teal-800' :
                             match.playerOneRace === 'RANDOM' ? 'bg-orange-100 text-orange-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
@@ -341,7 +299,7 @@ export default function MatchesPage() {
                           <span className={`px-2 py-1 rounded text-xs font-medium ${
                             match.playerTwoRace === 'TERRAN' ? 'bg-blue-100 text-blue-800' :
                             match.playerTwoRace === 'ZERG' ? 'bg-purple-100 text-purple-800' :
-                            match.playerTwoRace === 'PROTOSS' ? 'bg-green-100 text-green-800' :
+                            match.playerTwoRace === 'PROTOSS' ? 'bg-teal-100 text-teal-800' :
                             match.playerTwoRace === 'RANDOM' ? 'bg-orange-100 text-orange-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
@@ -406,35 +364,11 @@ export default function MatchesPage() {
                         )}
                       </td>
 
-                      {/* 액션 */}
-                      <td className="py-4 px-4 text-center">
-                        <div className="flex justify-center space-x-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditMatch(match);
-                            }}
-                            className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors font-medium"
-                          >
-                            수정
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteMatch(match);
-                            }}
-                            disabled={deleteLoading}
-                            className="px-3 py-1.5 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors disabled:opacity-50 font-medium"
-                          >
-                            {deleteLoading ? '삭제중...' : '삭제'}
-                          </button>
-                        </div>
-                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={11} className="py-12 text-center">
+                    <td colSpan={10} className="py-12 text-center">
                       <Gamepad2 className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                       <h3 className="text-lg font-medium text-gray-900 mb-2">등록된 경기가 없습니다</h3>
                       <p className="text-gray-500 mb-4">첫 번째 경기를 등록해보세요.</p>
@@ -496,33 +430,6 @@ export default function MatchesPage() {
         onSuccess={handleCreateSuccess}
       />
 
-      {/* 경기 수정 모달 */}
-      <MatchForm
-        isOpen={isEditModalOpen}
-        onClose={() => {
-          setIsEditModalOpen(false);
-          setSelectedMatch(null);
-        }}
-        onSuccess={handleEditSuccess}
-        match={selectedMatch}
-      />
-
-      {/* 경기 삭제 확인 다이얼로그 */}
-      <ConfirmDialog
-        isOpen={isDeleteDialogOpen}
-        onClose={handleCancelDelete}
-        title="경기 삭제"
-        message={
-          matchToDelete 
-            ? `"${matchToDelete.playerOne.nickname} vs ${matchToDelete.playerTwo.nickname}" 경기를 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`
-            : ''
-        }
-        confirmText="삭제"
-        cancelText="취소"
-        onConfirm={handleConfirmDelete}
-        loading={deleteLoading}
-        type="danger"
-      />
     </div>
   );
 }

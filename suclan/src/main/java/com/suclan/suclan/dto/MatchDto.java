@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 
@@ -53,14 +54,18 @@ public class MatchDto {
         private Long id;
         private PlayerDto.Summary playerOne;
         private PlayerDto.Summary playerTwo;
+        private Race playerOneRace;
+        private Race playerTwoRace;
         private PlayerDto.Summary winner;
         private PlayerDto.Summary loser;
         private String mapName;
         private String description;
+        private String streamingUrl;
         private ContestDto.Summary contest;
         private EntityStatus status;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
+        private LocalDateTime matchTime;
     }
 
     @Data

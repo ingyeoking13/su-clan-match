@@ -238,14 +238,18 @@ public class MatchService {
                 .id(match.getId())
                 .playerOne(convertPlayerToSummary(match.getPlayerOne()))
                 .playerTwo(convertPlayerToSummary(match.getPlayerTwo()))
+                .playerOneRace(match.getPlayerOneRace())
+                .playerTwoRace(match.getPlayerTwoRace())
                 .winner(match.getWinner() != null ? convertPlayerToSummary(match.getWinner()) : null)
                 .loser(match.getLoser() != null ? convertPlayerToSummary(match.getLoser()) : null)
                 .mapName(match.getMapName())
                 .description(match.getDescription())
                 .contest(match.getContest() != null ? convertContestToSummary(match.getContest()) : null)
+                .streamingUrl(match.getStreamingUrl())
                 .status(match.getStatus())
                 .createdAt(match.getCreatedAt())
                 .updatedAt(match.getUpdatedAt())
+                .matchTime(match.getMatchTime())
                 .build();
     }
 

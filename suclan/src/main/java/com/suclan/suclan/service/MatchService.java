@@ -31,7 +31,6 @@ import static com.suclan.suclan.domain.QPlayer.player;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class MatchService {
 
     private final MatchRepository matchRepository;

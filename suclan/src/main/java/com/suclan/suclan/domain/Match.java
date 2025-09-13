@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
+import org.springframework.data.util.Lazy;
 
 import java.time.LocalDateTime;
 
@@ -32,11 +33,11 @@ public class Match extends SoftDeleteTimeEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   Long id;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="player_one_id")
   Player playerOne;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="player_two_id")
   Player playerTwo;
 
@@ -46,11 +47,11 @@ public class Match extends SoftDeleteTimeEntity {
   @Enumerated(EnumType.STRING)
   Race playerTwoRace;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "winner_id")
   Player winner;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "loser_id")
   Player loser;
 
@@ -58,7 +59,7 @@ public class Match extends SoftDeleteTimeEntity {
   String description;
   String streamingUrl;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name="contest_id")
   Contest contest;
 

@@ -7,24 +7,73 @@ import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { MatchForm } from '@/components/MatchForm';
 import { useApi } from '@/hooks/useApi';
 import { matchApi } from '@/lib/api';
-import { Match, EntityStatus } from '@/types';
-import { Gamepad2, MapPin, Trophy, Plus, ArrowUpDown } from 'lucide-react';
+import { Match, PaginatedResponse, EntityStatus } from '@/types';
+import { Gamepad2, MapPin, Trophy, Plus, ArrowUpDown, ChevronLeft, ChevronRight, Search, X, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function MatchesPage() {
   const router = useRouter();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [showDeleted, setShowDeleted] = useState(false);
+  
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   
   // 정렬 상태
   const [sorts, setSorts] = useState<Array<{ field: string; direction: 'asc' | 'desc' }>>([
+    { field: 'matchTime', direction: 'desc' }
   ]);
   
-  const { data: matches, loading, error, refetch } = useApi<Match[]>(
-    () => matchApi.getAll(sorts),
-    [sorts]
+  // 검색 상태
+  const [searchCondition, setSearchCondition] = useState({
+    playerOneNickname: '',
+    playerTwoNickname: ''
+  });
+  const [appliedSearchCondition, setAppliedSearchCondition] = useState({
+    playerOneNickname: '',
+    playerTwoNickname: ''
+  });
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  
+  const { data: matchesResponse, loading, error, refetch } = useApi<PaginatedResponse<Match>>(
+    () => matchApi.getAll(appliedSearchCondition, showDeleted, currentPage, pageSize, sorts),
+    [appliedSearchCondition.playerOneNickname, appliedSearchCondition.playerTwoNickname, showDeleted, currentPage, pageSize, sorts]
   );
+  
+  const matches = matchesResponse?.content || [];
+  const totalPages = matchesResponse?.totalPages || 0;
+  const totalElements = matchesResponse?.totalElements || 0;
+
+  
+  // pageSize, showDeleted 변경 시 첫 페이지로 이동
+  React.useEffect(() => {
+    setCurrentPage(0);
+  }, [pageSize, showDeleted]);
+
+  // 검색 핸들러 함수들
+  const handleSearch = () => {
+    const hasSearchCondition = !!(searchCondition.playerOneNickname.trim() || searchCondition.playerTwoNickname.trim());
+    setIsSearchMode(hasSearchCondition);
+    setAppliedSearchCondition(searchCondition); // 검색 조건 적용
+    setCurrentPage(0); // 검색 시 첫 페이지로 이동
+  };
+
+  const handleClearSearch = () => {
+    setSearchCondition({ playerOneNickname: '', playerTwoNickname: '' });
+    setAppliedSearchCondition({ playerOneNickname: '', playerTwoNickname: '' }); // 적용된 검색 조건도 클리어
+    setIsSearchMode(false);
+    setCurrentPage(0);
+  };
+
+  const handleSearchInputChange = (field: 'playerOneNickname' | 'playerTwoNickname', value: string) => {
+    setSearchCondition(prev => ({ ...prev, [field]: value }));
+  };
+
   // 정렬 핸들러
   const handleSort = (field: string) => {
+    // 정렬 변경 시 첫 페이지로 이동
+    setCurrentPage(0);
     setSorts(prevSorts => {
       const existingIndex = prevSorts.findIndex(sort => sort.field === field);
       if (existingIndex >= 0) {
@@ -70,6 +119,8 @@ export default function MatchesPage() {
 
 
   const handleCreateSuccess = () => {
+    // 새 경기 생성 후 첫 페이지로 이동
+    setCurrentPage(0);
     refetch();
     setIsCreateModalOpen(false);
   };
@@ -101,13 +152,35 @@ export default function MatchesPage() {
             진행된 경기들을 확인하고 새로운 경기를 등록할 수 있습니다.
           </p>
         </div>
-        <button 
-          onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          새 경기 등록
-        </button>
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={() => setShowDeleted(!showDeleted)}
+            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+              showDeleted 
+                ? 'bg-red-100 text-red-700 hover:bg-red-200' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {showDeleted ? (
+              <>
+                <EyeOff className="h-5 w-5 mr-2" />
+                삭제된 경기 숨기기
+              </>
+            ) : (
+              <>
+                <Eye className="h-5 w-5 mr-2" />
+                삭제된 경기 보기
+              </>
+            )}
+          </button>
+          <button 
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            새 경기 등록
+          </button>
+        </div>
       </div>
 
       {/* 정렬 상태 표시 */}
@@ -134,7 +207,7 @@ export default function MatchesPage() {
                   <span key={sort.field} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
                     {sorts.length > 1 && `${index + 1}. `}
                     {getFieldName(sort.field)} ({sort.direction === 'asc' ? '오름차순' : '내림차순'})
-                  </span>
+                      </span>
                 );
               })}
             </div>
@@ -144,9 +217,96 @@ export default function MatchesPage() {
             >
               정렬 초기화
             </button>
-          </div>
-        </div>
+                    </div>
+                  </div>
       )}
+
+      {/* 검색 상태 표시 */}
+      {isSearchMode && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+          <div className="flex items-center text-sm text-green-700">
+            <span className="font-medium">검색 적용 중:</span>
+            <div className="ml-2 flex flex-wrap gap-2">
+              {appliedSearchCondition.playerOneNickname && (
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                  플레이어1: &ldquo;{appliedSearchCondition.playerOneNickname}&rdquo;
+                      </span>
+              )}
+              {appliedSearchCondition.playerTwoNickname && (
+                <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                  플레이어2: &ldquo;{appliedSearchCondition.playerTwoNickname}&rdquo;
+                      </span>
+              )}
+            </div>
+            <button
+              onClick={handleClearSearch}
+              className="ml-auto text-green-600 hover:text-green-800 text-xs underline"
+            >
+              검색 초기화
+            </button>
+          </div>
+                    </div>
+                  )}
+
+      {/* 페이지 크기 선택 및 페이지 정보 */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-700 whitespace-nowrap">페이지당</span>
+          <select
+            value={pageSize}
+            onChange={(e) => setPageSize(Number(e.target.value))}
+            className="px-2 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value={10}>10개</option>
+            <option value={20}>20개</option>
+            <option value={30}>30개</option>
+          </select>
+                    </div>
+
+         {/* 검색 영역 */}
+         <div className="flex items-center gap-2">
+           <input
+             type="text"
+             value={searchCondition.playerOneNickname}
+             onChange={(e) => handleSearchInputChange('playerOneNickname', e.target.value)}
+             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+             placeholder="플레이어1 검색"
+             className="w-32 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+           />
+           <input
+             type="text"
+             value={searchCondition.playerTwoNickname}
+             onChange={(e) => handleSearchInputChange('playerTwoNickname', e.target.value)}
+             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+             placeholder="플레이어2 검색"
+             className="w-32 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+           />
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 whitespace-nowrap"
+          >
+            <Search className="h-3 w-3 mr-1" />
+            검색
+          </button>
+          {isSearchMode && (
+            <button
+              onClick={handleClearSearch}
+              className="flex items-center px-2 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors whitespace-nowrap"
+            >
+              <X className="h-3 w-3 mr-1" />
+              초기화
+            </button>
+          )}
+                    </div>
+        
+        {totalElements > 0 && (
+          <div className="text-sm text-gray-700">
+            총 <span className="font-medium text-blue-600">{totalElements}</span>개
+            <span> 중 {currentPage * pageSize + 1}-{Math.min((currentPage + 1) * pageSize, totalElements)}개 표시</span>
+                      </div>
+                    )}
+                  </div>
 
       {/* 경기 테이블 */}
       <Card>
@@ -226,7 +386,7 @@ export default function MatchesPage() {
                       className="flex items-center justify-center hover:text-blue-600 transition-colors w-full"
                       title="클릭하여 정렬 추가/변경/제거"
                     >
-                      일시
+                      경기 일시
                       {getSortIcon('matchTime')}
                     </button>
                   </th>
@@ -234,30 +394,45 @@ export default function MatchesPage() {
               </thead>
               <tbody>
                 {matches && matches.length > 0 ? (
-                  matches.map((match) => (
+                  matches.map((match) => {
+                    const isDeleted = match.status === EntityStatus.DELETED;
+                    return (
                     <tr 
                       key={match.id} 
-                      className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+                      className={`border-b border-gray-100 transition-colors cursor-pointer ${
+                        isDeleted 
+                          ? 'bg-gray-50 hover:bg-gray-100 opacity-75' 
+                          : 'hover:bg-gray-50'
+                      }`}
                       onClick={() => router.push(`/matches/${match.id}`)}
                     >
                       {/* 경기 정보 */}
                       <td className="py-4 px-6">
                         <div className="flex items-center space-x-2">
-                          <Gamepad2 className="h-4 w-4 text-blue-500" />
+                          <Gamepad2 className={`h-4 w-4 ${isDeleted ? 'text-gray-400' : 'text-blue-500'}`} />
                           <div>
-                            <div className="font-medium">#{match.id}</div>
-                            {match.description && (
+                            <div className="flex items-center space-x-2">
+                              <span className={`font-medium ${isDeleted ? 'line-through text-gray-500' : ''}`}>#{match.id}</span>
+                              {isDeleted && (
+                                <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium">
+                                  삭제됨
+                                </span>
+                              )}
+                            </div>
+                  {match.description && (
                               <div className="text-sm text-gray-500 max-w-xs truncate" title={match.description}>
                                 {match.description}
                               </div>
-                            )}
-                          </div>
+                  )}
+                </div>
                         </div>
                       </td>
 
                       {/* 플레이어 1 */}
                       <td className="py-4 px-4 text-center">
-                        <div className="font-medium text-blue-600">{match.playerOne.nickname}</div>
+                        <div className={`font-medium ${isDeleted ? 'line-through text-gray-500' : 'text-blue-600'}`}>
+                          {match.playerOne.nickname}
+                        </div>
                         {match.playerOne.clan?.name && (
                           <div className="text-xs text-gray-500">({match.playerOne.clan.name})</div>
                         )}
@@ -287,7 +462,9 @@ export default function MatchesPage() {
 
                       {/* 플레이어 2 */}
                       <td className="py-4 px-4 text-center">
-                        <div className="font-medium text-red-600">{match.playerTwo.nickname}</div>
+                        <div className={`font-medium ${isDeleted ? 'line-through text-gray-500' : 'text-red-600'}`}>
+                          {match.playerTwo.nickname}
+                        </div>
                         {match.playerTwo.clan?.name && (
                           <div className="text-xs text-gray-500">({match.playerTwo.clan.name})</div>
                         )}
@@ -357,71 +534,102 @@ export default function MatchesPage() {
                                 hour: '2-digit', 
                                 minute: '2-digit' 
                               })}
-                            </div>
-                          </div>
+                </div>
+              </div>
                         ) : (
                           <span className="text-gray-400 text-sm">-</span>
                         )}
                       </td>
 
                     </tr>
-                  ))
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan={10} className="py-12 text-center">
-                      <Gamepad2 className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">등록된 경기가 없습니다</h3>
-                      <p className="text-gray-500 mb-4">첫 번째 경기를 등록해보세요.</p>
-                      <button 
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        경기 등록하기
-                      </button>
+          <Gamepad2 className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        {showDeleted ? '경기가 없습니다' : '등록된 경기가 없습니다'}
+                      </h3>
+                      <p className="text-gray-500 mb-4">
+                        {showDeleted 
+                          ? '삭제된 경기가 없거나 검색 조건에 맞는 경기가 없습니다.' 
+                          : '첫 번째 경기를 등록해보세요.'
+                        }
+                      </p>
+                      {!showDeleted && (
+          <button 
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            경기 등록하기
+          </button>
+                      )}
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
-          </div>
-        </CardContent>
-      </Card>
-
-
-
-      {/* 통계 섹션 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{matches?.length || 0}</div>
-            <div className="text-sm text-gray-500">총 경기 수</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {(matches || []).filter(m => m.status === EntityStatus.REGISTERED).length}
             </div>
-            <div className="text-sm text-gray-500">완료된 경기</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-yellow-600">
-              {(matches || []).filter(m => m.status === EntityStatus.RUNNING).length}
+
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
+              disabled={currentPage === 0}
+              className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              이전
+            </button>
+            
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: totalPages }, (_, i) => i).map((pageNum) => {
+                const displayPageNum = pageNum + 1; // 사용자에게는 1부터 표시
+                // 현재 페이지 주변의 페이지들만 표시
+                if (
+                  pageNum === 0 ||
+                  pageNum === totalPages - 1 ||
+                  (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                ) {
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-2 text-sm font-medium rounded-lg ${
+                        currentPage === pageNum
+                          ? 'bg-blue-600 text-white'
+                          : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      {displayPageNum}
+                    </button>
+                  );
+                } else if (
+                  pageNum === currentPage - 2 ||
+                  pageNum === currentPage + 2
+                ) {
+                  return <span key={pageNum} className="px-2 text-gray-500">...</span>;
+                }
+                return null;
+              })}
             </div>
-            <div className="text-sm text-gray-500">진행중인 경기</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {(matches || []).filter(m => m.status === EntityStatus.PENDING).length}
+            
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))}
+              disabled={currentPage === totalPages - 1}
+              className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              다음
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </button>
             </div>
-            <div className="text-sm text-gray-500">예정된 경기</div>
-          </CardContent>
-        </Card>
       </div>
+      )}
 
       {/* 경기 등록 모달 */}
       <MatchForm

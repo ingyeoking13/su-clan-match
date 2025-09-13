@@ -5,6 +5,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.suclan.suclan.constant.EntityStatus;
 import com.suclan.suclan.domain.Contest;
 import com.suclan.suclan.domain.Match;
 import com.suclan.suclan.domain.Player;
@@ -154,8 +155,16 @@ public class MatchService {
         playerNameCondition = (playerNameCondition == null) ? twoCond : playerNameCondition.and(twoCond);
       }
 
+      BooleanExpression deleteCondition = null;
+
+      if (condition.isIncludeDeleted()){
+        deleteCondition = match.status.in(EntityStatus.REGISTERED, EntityStatus.DELETED);
+      } else {
+        deleteCondition = match.status.in(EntityStatus.REGISTERED);
+      }
+
       var query = jpaQueryFactory.selectFrom(match)
-          .where(playerNameCondition)
+          .where(playerNameCondition, deleteCondition)
           .offset(pageable.getOffset())
           .limit(pageable.getPageSize());
 
@@ -172,7 +181,11 @@ public class MatchService {
         }
       }
 
-      List<MatchDto.Summary> result = query.orderBy(orders.toArray(new OrderSpecifier[]{})).fetch().stream().map(this::convertToSummary).toList();
+     List<MatchDto.Summary> result = query.orderBy(
+         orders.toArray(new OrderSpecifier[]{})
+     ).fetch().stream().map(
+         this::convertToSummary
+     ).toList();
 
       long total = jpaQueryFactory
           .select(match.count())
@@ -206,6 +219,12 @@ public class MatchService {
 
       if (condition.getEndedAt() != null) {
         whereCondition = whereCondition.and(match.matchTime.loe(condition.getEndedAt()));
+      }
+
+      if (!condition.isIncludeDeleted()) {
+        whereCondition = whereCondition.and(match.status.eq(EntityStatus.REGISTERED));
+      } else {
+        whereCondition = whereCondition.and(match.status.in(EntityStatus.REGISTERED, EntityStatus.DELETED));
       }
 
       List<MatchDto.Summary> result = jpaQueryFactory.selectFrom(match)

@@ -1,5 +1,5 @@
 // API 설정 및 유틸리티 함수들
-import { Clan, Player, Match, Contest, Grade, MatchUpDateRequest } from '@/types';
+import { Clan, Player, Match, Contest, Grade, MatchUpDateRequest, Notice, NoticeType, MainSummary } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
@@ -179,16 +179,25 @@ export const playerApi = {
 };
 
 export const matchApi = {
-  getAll: (sorts: Array<{ field: string; direction: 'asc' | 'desc' }> = []) => {
-    const params = new URLSearchParams();
+  getAll: (searchCondition: { playerOneNickname?: string; playerTwoNickname?: string } = {}, includeDeleted: boolean = false, page: number = 0, size: number = 20, sorts: Array<{ field: string; direction: 'asc' | 'desc' }> = []) => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString()
+    });
+    if (includeDeleted) {
+      params.append('includeDeleted', 'true');
+    }
+    // SearchCondition 파라미터 추가
+    if (searchCondition.playerOneNickname && searchCondition.playerOneNickname.trim()) {
+      params.append('playerOneNickname', searchCondition.playerOneNickname.trim());
+    }
+    if (searchCondition.playerTwoNickname && searchCondition.playerTwoNickname.trim()) {
+      params.append('playerTwoNickname', searchCondition.playerTwoNickname.trim());
+    }
     sorts.forEach(sort => {
       params.append('sort', `${sort.field},${sort.direction}`);
     });
-    const url = sorts.length > 0 ? `/matches?${params.toString()}` : '/matches';
-    return apiClient.get<PaginatedResponse<Match>>(url).then(response => ({
-      ...response,
-      data: response.data.content
-    }));
+    return apiClient.get<PaginatedResponse<Match>>(`/matches?${params.toString()}`);
   },
   getById: (id: number) => apiClient.get<Match>(`/matches/${id}`),
   create: (data: Partial<Match>) => apiClient.post<Match>('/matches', data),
@@ -231,4 +240,25 @@ export const gradeApi = {
   delete: (id: number) => {
     return apiClient.delete<void>(`/grades/${id}`);
   },
+};
+
+export const noticeApi = {
+  getAll: (page: number = 0, size: number = 10, noticeType?: NoticeType) => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString()
+    });
+    if (noticeType) {
+      params.append('noticeType', noticeType);
+    }
+    return apiClient.get<PaginatedResponse<Notice>>(`/notice?${params.toString()}`);
+  },
+  getById: (id: number) => apiClient.get<Notice>(`/notice/${id}`),
+  create: (data: { title: string; writer: string; text: string; noticeType: NoticeType }) => {
+    return apiClient.post<{ id: number }>('/notice', data);
+  },
+};
+
+export const mainApi = {
+  getSummary: () => apiClient.get<MainSummary>('/main'),
 };

@@ -8,7 +8,7 @@ spring:
     password: ${DB_PASSWORD:}
     pool_mode: transaction
     hikari:
-      maximum-pool-size: 5    # 최대 풀 사이즈 (DB 리밋보다 작게)
+      maximum-pool-size: 3
       minimum-idle: 2
       idle-timeout: 30000      # 30초
       max-lifetime: 600000     # 10분
@@ -38,6 +38,7 @@ spring:
 logging.level:
   root: INFO
   org.hibernate.SQL: DEBUG
+  org.hibernate.type.descriptor.sql: DEBUG
   org.hibernate.orm.jdbc.bind: DEBUG
   org.springframework.session.data.redis: debug
   com.zaxxer.hikari: DEBUG

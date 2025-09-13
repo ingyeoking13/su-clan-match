@@ -83,6 +83,20 @@ export interface Contest extends BaseEntity {
   matchCount?: number;
 }
 
+export enum NoticeType {
+  SYSTEM = 'SYSTEM',
+  ADMIN = 'ADMIN'
+}
+
+export interface Notice {
+  id: number;
+  title: string;
+  writer: string;
+  text?: string;
+  noticeType: NoticeType;
+  createdAt: string;
+}
+
 export interface DashboardStats {
   totalClans: number;
   totalPlayers: number;
@@ -90,6 +104,13 @@ export interface DashboardStats {
   totalContests: number;
   activeContests: number;
   recentMatches: Match[];
+}
+
+export interface MainSummary {
+  clanCount: number;
+  memberCount: number;
+  matchCount: number;
+  matches: Match[];
 }
 
 export interface PaginatedResponse<T> {

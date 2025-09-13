@@ -1,14 +1,11 @@
 package com.suclan.suclan.domain;
 
 import com.suclan.suclan.constant.EntityStatus;
+import com.suclan.suclan.constant.NoticeType;
 import com.suclan.suclan.domain.base.SoftDeleteTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
-
-import java.time.LocalDateTime;
-
-import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
@@ -17,30 +14,30 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @Setter
 @SQLDelete(sql = """
-        UPDATE player_clans
+        UPDATE matches
         SET deleted_at = CURRENT_TIMESTAMP,
             status = 'DELETED'
         WHERE id = ?
 """ )
-@Table(name = "player_clans")
-public class PlayerClan extends SoftDeleteTimeEntity {
+@Table(name = "notices")
+public class Notice extends SoftDeleteTimeEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  Long id;
+  private Long id;
 
-  @ManyToOne(fetch = LAZY)
-  @JoinColumn(name = "player_id")
-  Player player;
+  private String title;
 
-  @ManyToOne(fetch = LAZY)
-  @JoinColumn(name = "clan_id")
-  Clan clan;
+  @Column(columnDefinition = "TEXT")
+  private String text;
 
-  @Enumerated(EnumType.STRING)
+  private String writer;
+
   @Builder.Default
-  EntityStatus status = EntityStatus.REGISTERED;
+  @Enumerated(EnumType.STRING)
+  private NoticeType noticeType = NoticeType.ADMIN;
 
-  LocalDateTime joinedAt;
-  LocalDateTime exitedAt;
+  @Builder.Default
+  @Enumerated(EnumType.STRING)
+  private EntityStatus status = EntityStatus.REGISTERED;
 }

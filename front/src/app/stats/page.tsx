@@ -13,7 +13,7 @@ export default function StatsPage() {
   // API 데이터 페칭
   const { data: clans, loading: clansLoading, error: clansError, refetch: refetchClans } = useApi<Clan[]>(clanApi.getAll);
   const { data: players, loading: playersLoading, error: playersError, refetch: refetchPlayers } = useApi<PaginatedResponse<Player>>(() => playerApi.getAll());
-  const { data: matches, loading: matchesLoading, error: matchesError, refetch: refetchMatches } = useApi<Match[]>(matchApi.getAll);
+  const { data: matchesResponse, loading: matchesLoading, error: matchesError, refetch: refetchMatches } = useApi<PaginatedResponse<Match>>(() => matchApi.getAll());
   const { data: contests, loading: contestsLoading, error: contestsError, refetch: refetchContests } = useApi<Contest[]>(contestApi.getAll);
 
   // 로딩 상태 확인
@@ -45,6 +45,9 @@ export default function StatsPage() {
     );
   }
 
+  // 데이터 추출
+  const matches = matchesResponse?.content || [];
+  
   // 통계 계산
   const totalMatches = matches?.length || 0;
   const completedMatches = (matches || []).filter(m => m.status === EntityStatus.REGISTERED).length;

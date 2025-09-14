@@ -3,10 +3,10 @@ spring:
     active: local
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres?prepareThreshold=0
+    url: jdbc:postgresql://aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres?prepareThreshold=0
     username: ${DB_USER:}
     password: ${DB_PASSWORD:}
-    pool_mode: transaction
+    pool_mode: session
     hikari:
       maximum-pool-size: 3
       minimum-idle: 2

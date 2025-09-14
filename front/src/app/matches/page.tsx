@@ -45,6 +45,7 @@ export default function MatchesPage() {
   const totalPages = matchesResponse?.totalPages || 0;
   const totalElements = matchesResponse?.totalElements || 0;
 
+
   
   // pageSize, showDeleted 변경 시 첫 페이지로 이동
   React.useEffect(() => {
@@ -144,18 +145,22 @@ export default function MatchesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
+      {/* 헤더 섹션 */}
+      <div className="space-y-4">
+        {/* 제목과 설명 */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">경기 관리</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">경기 관리</h1>
+          <p className="mt-2 text-sm lg:text-base text-gray-600">
             진행된 경기들을 확인하고 새로운 경기를 등록할 수 있습니다.
           </p>
         </div>
-        <div className="flex items-center space-x-3">
+        
+        {/* 버튼들 - 모바일에서는 세로 배치 */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
           <button 
             onClick={() => setShowDeleted(!showDeleted)}
-            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+            className={`flex items-center justify-center px-4 py-2 rounded-lg transition-colors ${
               showDeleted 
                 ? 'bg-red-100 text-red-700 hover:bg-red-200' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -164,21 +169,24 @@ export default function MatchesPage() {
             {showDeleted ? (
               <>
                 <EyeOff className="h-5 w-5 mr-2" />
-                삭제된 경기 숨기기
+                <span className="hidden sm:inline">삭제된 경기 숨기기</span>
+                <span className="sm:hidden">삭제된 경기 숨기기</span>
               </>
             ) : (
               <>
                 <Eye className="h-5 w-5 mr-2" />
-                삭제된 경기 보기
+                <span className="hidden sm:inline">삭제된 경기 보기</span>
+                <span className="sm:hidden">삭제된 경기 보기</span>
               </>
             )}
           </button>
           <button 
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="h-5 w-5 mr-2" />
-            새 경기 등록
+            <span className="hidden sm:inline">새 경기 등록</span>
+            <span className="sm:hidden">새 경기 등록</span>
           </button>
         </div>
       </div>
@@ -249,7 +257,7 @@ export default function MatchesPage() {
                   )}
 
       {/* 페이지 크기 선택 및 페이지 정보 */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 mb-4">
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-700 whitespace-nowrap">페이지당</span>
           <select
@@ -261,30 +269,32 @@ export default function MatchesPage() {
             <option value={20}>20개</option>
             <option value={30}>30개</option>
           </select>
-                    </div>
+        </div>
 
-         {/* 검색 영역 */}
-         <div className="flex items-center gap-2">
-           <input
-             type="text"
-             value={searchCondition.playerOneNickname}
-             onChange={(e) => handleSearchInputChange('playerOneNickname', e.target.value)}
-             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-             placeholder="플레이어1 검색"
-             className="w-32 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-           />
-           <input
-             type="text"
-             value={searchCondition.playerTwoNickname}
-             onChange={(e) => handleSearchInputChange('playerTwoNickname', e.target.value)}
-             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-             placeholder="플레이어2 검색"
-             className="w-32 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-           />
+        {/* 검색 영역 - 모바일에서는 세로 배치 */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={searchCondition.playerOneNickname}
+              onChange={(e) => handleSearchInputChange('playerOneNickname', e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              placeholder="플레이어1 검색"
+              className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <input
+              type="text"
+              value={searchCondition.playerTwoNickname}
+              onChange={(e) => handleSearchInputChange('playerTwoNickname', e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              placeholder="플레이어2 검색"
+              className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
           <button
             onClick={handleSearch}
             disabled={loading}
-            className="flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 whitespace-nowrap"
+            className="flex items-center justify-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 whitespace-nowrap"
           >
             <Search className="h-3 w-3 mr-1" />
             검색
@@ -310,9 +320,135 @@ export default function MatchesPage() {
 
       {/* 경기 테이블 */}
       <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
+        {/* 모바일용 CardContent */}
+        <div className="lg:hidden px-2 py-2">
+          {/* 모바일 카드 뷰 */}
+          <div className="space-y-1">
+            {matches && matches.length > 0 ? (
+              matches.map((match) => {
+                const isDeleted = match.status === EntityStatus.DELETED;
+                return (
+                  <div
+                    key={match.id}
+                    className={`bg-white border border-gray-200 rounded-lg p-3 sm:p-4 shadow-sm ${
+                      isDeleted ? 'opacity-75 bg-gray-50' : 'hover:shadow-md'
+                    } transition-shadow cursor-pointer`}
+                    onClick={() => router.push(`/matches/${match.id}`)}
+                  >
+                    {/* 경기 정보 헤더 */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <Gamepad2 className={`h-4 w-4 ${isDeleted ? 'text-gray-400' : 'text-blue-500'}`} />
+                        <span className={`font-medium text-sm ${isDeleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                          {match.contestName || '일반 경기'}
+                        </span>
+                        {isDeleted && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs font-medium">
+                            삭제됨
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {match.matchTime ? new Date(match.matchTime).toLocaleDateString('ko-KR', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        }) : '날짜 없음'}
+                      </div>
+                    </div>
+
+                    {/* 플레이어 정보 */}
+                    <div className="space-y-1.5">
+                      {/* 플레이어 1 */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-medium text-blue-600">1</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <div className={`font-medium text-sm ${isDeleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                              {match.playerOneNickname || match.playerOne?.nickname || '알 수 없음'}
+                            </div>
+                            <div className="text-xs text-gray-500">{match.playerOneRace || match.playerOne?.race || '알 수 없음'}</div>
+                          </div>
+                        </div>
+                        {((match.winnerNickname === match.playerOneNickname) || 
+                          (match.winner?.id === match.playerOne?.id)) && (
+                          <Trophy className="h-4 w-4 text-yellow-500" />
+                        )}
+                      </div>
+
+                      {/* VS */}
+                      <div className="flex justify-center">
+                        <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded">VS</span>
+                      </div>
+
+                      {/* 플레이어 2 */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <div className="w-7 h-7 bg-red-100 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-medium text-red-600">2</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <div className={`font-medium text-sm ${isDeleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                              {match.playerTwoNickname || match.playerTwo?.nickname || '알 수 없음'}
+                            </div>
+                            <div className="text-xs text-gray-500">{match.playerTwoRace || match.playerTwo?.race || '알 수 없음'}</div>
+                          </div>
+                        </div>
+                        {((match.winnerNickname === match.playerTwoNickname) || 
+                          (match.winner?.id === match.playerTwo?.id)) && (
+                          <Trophy className="h-4 w-4 text-yellow-500" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 승자 정보 */}
+                    {(match.winnerNickname || match.winner?.nickname) && (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <div className="flex items-center justify-center space-x-2">
+                          <Trophy className="h-4 w-4 text-yellow-500" />
+                          <span className="text-sm font-medium text-yellow-600">
+                            승자: {match.winnerNickname || match.winner?.nickname}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 맵 정보 */}
+                    {match.mapName && (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="h-3 w-3 text-gray-400" />
+                          <span className="text-xs text-gray-600">{match.mapName}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-12">
+                <Gamepad2 className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">등록된 경기가 없습니다</h3>
+                <p className="text-gray-500 mb-4">첫 번째 경기를 등록해보세요.</p>
+                <button 
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  경기 등록하기
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 데스크톱용 CardContent */}
+        <CardContent className="hidden lg:block p-0 sm:p-4">
+          {/* 데스크톱 테이블 뷰 */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="w-full min-w-[1000px]">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
                   <th className="text-left py-4 px-6 font-medium text-gray-900">
@@ -570,9 +706,10 @@ export default function MatchesPage() {
                 )}
               </tbody>
             </table>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+
+        </CardContent>
+      </Card>
 
       {/* 페이지네이션 */}
       {totalPages > 1 && (

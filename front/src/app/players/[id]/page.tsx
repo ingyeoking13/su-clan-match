@@ -176,20 +176,21 @@ export default function PlayerDetailPage() {
 
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 max-w-full overflow-x-hidden">
       {/* 뒤로가기 버튼 */}
       <button
         onClick={() => router.back()}
-        className="flex items-center text-blue-600 hover:text-blue-800 mb-6 transition-colors"
+        className="flex items-center text-blue-600 hover:text-blue-800 mb-4 sm:mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
-        선수 목록으로 돌아가기
+        <span className="text-sm sm:text-base">선수 목록으로 돌아가기</span>
       </button>
 
       {/* 선수 기본 정보 */}
-      <Card className="mb-8">
-        <div className="p-6">
-          <div className="flex items-start justify-between">
+      <Card className="mb-6 sm:mb-8">
+        <div className="p-4 sm:p-6">
+          {/* 데스크톱 레이아웃 */}
+          <div className="hidden lg:flex items-start justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
                 <User className="w-10 h-10 text-gray-500" />
@@ -229,49 +230,92 @@ export default function PlayerDetailPage() {
               </div>
             </div>
           </div>
+
+          {/* 모바일 레이아웃 */}
+          <div className="lg:hidden space-y-4">
+            {/* 선수 정보 */}
+            <div className="flex items-center space-x-3">
+              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <User className="w-8 h-8 text-gray-500" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl font-bold text-gray-900 mb-1 truncate">{player.nickname}</h1>
+                <div className="flex flex-col space-y-1">
+                  <Badge className={`${getRaceColor(player.race)} border-0 text-xs w-fit`}>
+                    {getRaceText(player.race)}
+                  </Badge>
+                  <span className="text-sm text-gray-600">등급: {player.grade?.name || '미정'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 가입일 정보 */}
+            <div className="flex items-center justify-center text-sm text-gray-500">
+              <Calendar className="w-4 h-4 mr-1" />
+              <span>가입일: {new Date(player.createdAt).toLocaleDateString('ko-KR')}</span>
+            </div>
+
+            {/* 액션 버튼들 */}
+            <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+              <button
+                onClick={handleEdit}
+                className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                수정
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors w-full"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                삭제
+              </button>
+            </div>
+          </div>
         </div>
       </Card>
 
       {/* 전체 전적 */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <Card>
-          <div className="p-6 text-center">
-            <div className="text-2xl font-bold text-blue-600">{totalWins + totalLosses}</div>
-            <div className="text-sm text-gray-600">총 경기수</div>
+          <div className="p-3 sm:p-6 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-blue-600">{totalWins + totalLosses}</div>
+            <div className="text-xs sm:text-sm text-gray-600">총 경기수</div>
           </div>
         </Card>
         <Card>
-          <div className="p-6 text-center">
-            <div className="text-2xl font-bold text-green-600">{totalWins}</div>
-            <div className="text-sm text-gray-600">승리</div>
+          <div className="p-3 sm:p-6 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">{totalWins}</div>
+            <div className="text-xs sm:text-sm text-gray-600">승리</div>
           </div>
         </Card>
         <Card>
-          <div className="p-6 text-center">
-            <div className="text-2xl font-bold text-red-600">{totalLosses}</div>
-            <div className="text-sm text-gray-600">패배</div>
+          <div className="p-3 sm:p-6 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-red-600">{totalLosses}</div>
+            <div className="text-xs sm:text-sm text-gray-600">패배</div>
           </div>
         </Card>
         <Card>
-          <div className="p-6 text-center">
-            <div className="text-2xl font-bold text-purple-600">{winRate}%</div>
-            <div className="text-sm text-gray-600">승률</div>
+          <div className="p-3 sm:p-6 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-purple-600">{winRate}%</div>
+            <div className="text-xs sm:text-sm text-gray-600">승률</div>
           </div>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         {/* 상대전적 */}
         <Card>
-          <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <Target className="w-5 h-5 mr-2" />
+          <div className="p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center">
+              <Target className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               상대전적
             </h2>
             {Object.keys(headToHeadData).length === 0 ? (
-              <p className="text-gray-500 text-center py-8">경기 기록이 없습니다.</p>
+              <p className="text-gray-500 text-center py-6 sm:py-8 text-sm sm:text-base">경기 기록이 없습니다.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {Object.entries(headToHeadData)
                   .sort(([,a], [,b]) => (b.wins + b.losses) - (a.wins + a.losses))
                   .map(([opponentId, data]) => {
@@ -279,20 +323,20 @@ export default function PlayerDetailPage() {
                     const winRate = totalGames > 0 ? (data.wins / totalGames * 100).toFixed(1) : '0.0';
                     
                     return (
-                      <div key={opponentId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4 text-gray-600" />
+                      <div key={opponentId} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                          <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                            <User className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
                           </div>
-                          <div>
-                            <div className="font-medium">{data.opponent.nickname}</div>
-                            <Badge className={`${getRaceColor(data.opponent.race)} border-0 text-xs`}>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-sm sm:text-base truncate">{data.opponent.nickname}</div>
+                            <Badge className={`${getRaceColor(data.opponent.race)} border-0 text-xs w-fit`}>
                               {getRaceText(data.opponent.race)}
                             </Badge>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="font-semibold">
+                        <div className="text-right flex-shrink-0 ml-2">
+                          <div className="font-semibold text-sm sm:text-base">
                             <span className="text-green-600">{data.wins}</span>
                             <span className="text-gray-400 mx-1">-</span>
                             <span className="text-red-600">{data.losses}</span>
@@ -309,15 +353,15 @@ export default function PlayerDetailPage() {
 
         {/* 최근 경기 */}
         <Card>
-          <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center">
-              <Gamepad2 className="w-5 h-5 mr-2" />
+          <div className="p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center">
+              <Gamepad2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               최근 경기
             </h2>
             {matches.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">경기 기록이 없습니다.</p>
+              <p className="text-gray-500 text-center py-6 sm:py-8 text-sm sm:text-base">경기 기록이 없습니다.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {matches.slice(0, 10).map((match) => {
                   const isPlayerOne = match.playerOne.id === player.id;
                   const opponent = isPlayerOne 
@@ -333,44 +377,86 @@ export default function PlayerDetailPage() {
                   return (
                     <div 
                       key={match.id} 
-                      className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
+                      className="p-2 sm:p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer"
                       onClick={() => router.push(`/matches/${match.id}`)}
                     >
-                      <div className="flex items-center space-x-3">
-                        <Badge className={`${isWin ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} border-0`}>
-                          {isWin ? '승' : '패'}
-                        </Badge>
-                        <div>
-                          <div className="flex items-center space-x-2 mb-1">
-                            <div className="flex items-center space-x-2">
-                              <Badge className={`${getRaceColor(me.race)} border-0 text-xs`}>
-                                {getRaceText(me.race)}
-                              </Badge>
-                              <span className="font-medium">{me.nickname}</span>
-                            </div>
-                            <span className="text-gray-400">vs</span>
-                            <div className="flex items-center space-x-2">
-                              <Badge className={`${getRaceColor(opponent.race)} border-0 text-xs`}>
-                                {getRaceText(opponent.race)}
-                              </Badge>
-                              <span className="font-medium">{opponent.nickname}</span>
-                            </div>
+                      {/* 모바일 레이아웃 */}
+                      <div className="lg:hidden space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Badge className={`${isWin ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} border-0 text-xs`}>
+                            {isWin ? '승' : '패'}
+                          </Badge>
+                          <div className="text-xs text-gray-500">
+                            {match.matchTime 
+                              ? new Date(match.matchTime).toLocaleDateString('ko-KR')
+                              : new Date(match.createdAt).toLocaleDateString('ko-KR')
+                            }
                           </div>
-                          <div className="flex items-center space-x-1 text-sm text-gray-500">
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <Badge className={`${getRaceColor(me.race)} border-0 text-xs`}>
+                              {getRaceText(me.race)}
+                            </Badge>
+                            <span className="font-medium text-sm truncate">{me.nickname}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-gray-400 text-sm">vs</span>
+                            <Badge className={`${getRaceColor(opponent.race)} border-0 text-xs`}>
+                              {getRaceText(opponent.race)}
+                            </Badge>
+                            <span className="font-medium text-sm truncate">{opponent.nickname}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-xs text-gray-500">
+                          <div className="flex items-center space-x-1">
                             <MapPin className="w-3 h-3" />
-                            <span>{match.mapName}</span>
+                            <span className="truncate">{match.mapName}</span>
                           </div>
+                          <span className="truncate">{match.contestName}</span>
                         </div>
                       </div>
-                      <div className="text-right text-sm text-gray-500">
-                        <div className="flex items-center">
-                          <Calendar className="w-3 h-3 mr-1" />
-                          {match.matchTime 
-                            ? new Date(match.matchTime).toLocaleDateString('ko-KR')
-                            : new Date(match.createdAt).toLocaleDateString('ko-KR')
-                          }
+
+                      {/* 데스크톱 레이아웃 */}
+                      <div className="hidden lg:flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <Badge className={`${isWin ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} border-0`}>
+                            {isWin ? '승' : '패'}
+                          </Badge>
+                          <div>
+                            <div className="flex items-center space-x-2 mb-1">
+                              <div className="flex items-center space-x-2">
+                                <Badge className={`${getRaceColor(me.race)} border-0 text-xs`}>
+                                  {getRaceText(me.race)}
+                                </Badge>
+                                <span className="font-medium">{me.nickname}</span>
+                              </div>
+                              <span className="text-gray-400">vs</span>
+                              <div className="flex items-center space-x-2">
+                                <Badge className={`${getRaceColor(opponent.race)} border-0 text-xs`}>
+                                  {getRaceText(opponent.race)}
+                                </Badge>
+                                <span className="font-medium">{opponent.nickname}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-1 text-sm text-gray-500">
+                              <MapPin className="w-3 h-3" />
+                              <span>{match.mapName}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div>{match.contestName}</div>
+                        <div className="text-right text-sm text-gray-500">
+                          <div className="flex items-center">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            {match.matchTime 
+                              ? new Date(match.matchTime).toLocaleDateString('ko-KR')
+                              : new Date(match.createdAt).toLocaleDateString('ko-KR')
+                            }
+                          </div>
+                          <div>{match.contestName}</div>
+                        </div>
                       </div>
                     </div>
                   );

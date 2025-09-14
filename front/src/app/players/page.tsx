@@ -181,18 +181,21 @@ export default function PlayersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
+      {/* 헤더 섹션 */}
+      <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">선수 관리</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">선수 관리</h1>
+          <p className="mt-2 text-sm lg:text-base text-gray-600">
             등록된 선수들을 관리하고 새로운 선수를 추가할 수 있습니다.
           </p>
         </div>
-        <div className="flex items-center space-x-3">
+        
+        {/* 버튼들 - 모바일에서는 세로 배치 */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
           <button 
             onClick={() => setShowDeleted(!showDeleted)}
-            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+            className={`flex items-center justify-center px-4 py-2 rounded-lg transition-colors ${
               showDeleted 
                 ? 'bg-red-100 text-red-700 hover:bg-red-200' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -201,27 +204,30 @@ export default function PlayersPage() {
             {showDeleted ? (
               <>
                 <EyeOff className="h-5 w-5 mr-2" />
-                삭제된 선수 숨기기
+                <span className="hidden sm:inline">삭제된 선수 숨기기</span>
+                <span className="sm:hidden">삭제된 선수 숨기기</span>
               </>
             ) : (
               <>
                 <Eye className="h-5 w-5 mr-2" />
-                삭제된 선수 보기
+                <span className="hidden sm:inline">삭제된 선수 보기</span>
+                <span className="sm:hidden">삭제된 선수 보기</span>
               </>
             )}
           </button>
           <button 
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="h-5 w-5 mr-2" />
-            새 선수 추가
+            <span className="hidden sm:inline">새 선수 추가</span>
+            <span className="sm:hidden">새 선수 추가</span>
           </button>
         </div>
       </div>
 
       {/* 검색 및 페이지 정보 */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 mb-4">
         {/* 페이지 크기 선택 */}
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-700 whitespace-nowrap">페이지당</span>
@@ -237,14 +243,14 @@ export default function PlayersPage() {
         </div>
         
         {/* 검색 영역 */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <input
             type="text"
             value={searchCondition.nickname}
             onChange={(e) => handleSearchInputChange('nickname', e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             placeholder="선수명 검색"
-            className="w-32 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full sm:w-32 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           />
           <input
             type="text"
@@ -252,12 +258,12 @@ export default function PlayersPage() {
             onChange={(e) => handleSearchInputChange('grade', e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             placeholder="등급 검색"
-            className="w-24 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full sm:w-24 px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           />
           <button
             onClick={handleSearch}
             disabled={loading}
-            className="flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 whitespace-nowrap"
+            className="flex items-center justify-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 whitespace-nowrap"
           >
             <Search className="h-3 w-3 mr-1" />
             검색
@@ -265,7 +271,7 @@ export default function PlayersPage() {
           {isSearchMode && (
             <button
               onClick={handleClearSearch}
-              className="flex items-center px-2 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors whitespace-nowrap"
+              className="flex items-center justify-center px-2 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors whitespace-nowrap"
             >
               <X className="h-3 w-3 mr-1" />
               초기화
@@ -274,7 +280,7 @@ export default function PlayersPage() {
         </div>
 
         {/* 페이지 정보 */}
-        <div className="text-sm text-gray-700 ml-auto">
+        <div className="text-sm text-gray-700 text-center sm:text-right">
           전체 {totalElements}명
           {totalElements > 0 && (
             <span> 중 {currentPage * pageSize + 1}-{Math.min((currentPage + 1) * pageSize, totalElements)}명 표시</span>
@@ -338,88 +344,238 @@ export default function PlayersPage() {
 
       {/* 선수 테이블 */}
       <Card>
-        <CardHeader>
-          <CardTitle>선수 목록</CardTitle>
-        </CardHeader>
-        <CardContent>
+        {/* 모바일용 CardContent */}
+        <div className="lg:hidden px-2 py-2">
+          {/* 모바일 카드 뷰 */}
+          <div className="space-y-1">
+            {players && players.length > 0 ? (
+              players.map((player) => {
+                const isDeleted = player.status === EntityStatus.DELETED;
+                const totalMatches = player.totalMatches ?? player.matchCount ?? 0;
+                const wins = player.wins ?? player.winCount ?? 0;
+                const losses = player.losses ?? player.loseCount ?? 0;
+                const winRate = calculateWinRate(wins, totalMatches);
+                
+                return (
+                  <div
+                    key={player.id}
+                    className={`bg-white border border-gray-200 rounded-lg p-3 sm:p-4 shadow-sm ${
+                      isDeleted ? 'opacity-75 bg-gray-50' : 'hover:shadow-md'
+                    } transition-shadow cursor-pointer`}
+                    onClick={() => handlePlayerClick(player)}
+                  >
+                    {/* 선수 정보 헤더 */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <UserCheck className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div>
+                          <div className={`font-medium text-sm ${isDeleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                            {player.nickname}
+                          </div>
+                          {isDeleted && (
+                            <span className="text-xs text-red-600 font-medium">삭제됨</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {new Date(player.createdAt).toLocaleDateString('ko-KR')}
+                      </div>
+                    </div>
+
+                    {/* 선수 상세 정보 */}
+                    <div className="space-y-1.5">
+                      {/* 종족과 등급 */}
+                      <div className="flex items-center space-x-2">
+                        {player.race && (
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            player.race === 'TERRAN' ? 'bg-blue-100 text-blue-800' :
+                            player.race === 'ZERG' ? 'bg-purple-100 text-purple-800' :
+                            player.race === 'PROTOSS' ? 'bg-green-100 text-green-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {player.race}
+                          </span>
+                        )}
+                        {player.grade && (
+                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-medium">
+                            {player.grade.name}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* 클랜 정보 */}
+                      {player.clan?.name && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500">소속:</span>
+                          <span className="text-xs text-blue-600 font-medium">
+                            {player.clan.name}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* 경기 통계 */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-1">
+                            <Target className="h-3 w-3 text-gray-400" />
+                            <span className="text-xs text-gray-600">{totalMatches}경기</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Trophy className="h-3 w-3 text-green-500" />
+                            <span className="text-xs text-green-600">{wins}승</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <span className="text-xs text-red-600">{losses}패</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs font-medium">{winRate}%</span>
+                          <div className="w-12 bg-gray-200 rounded-full h-1.5">
+                            <div
+                              className="bg-green-500 h-1.5 rounded-full transition-all duration-300"
+                              style={{ width: `${winRate}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 액션 버튼 */}
+                    <div className="mt-2 pt-2 border-t border-gray-100">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePlayerClick(player);
+                          }}
+                          className="flex-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition-colors"
+                        >
+                          상세
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(player);
+                          }}
+                          className="flex-1 px-2 py-1 text-xs bg-gray-50 text-gray-600 rounded hover:bg-gray-100 transition-colors"
+                        >
+                          수정
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-12">
+                <UserCheck className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {showDeleted ? '선수가 없습니다' : '등록된 선수가 없습니다'}
+                </h3>
+                <p className="text-gray-500 mb-4">
+                  {showDeleted 
+                    ? '삭제된 선수를 포함하여 표시할 선수가 없습니다.' 
+                    : '첫 번째 선수를 추가해보세요.'
+                  }
+                </p>
+                {!showDeleted && (
+                  <button 
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    선수 추가하기
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 데스크톱용 CardContent */}
+        <CardContent className="hidden lg:block p-0 sm:p-4">
+          <CardHeader>
+            <CardTitle>선수 목록</CardTitle>
+          </CardHeader>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[1000px]">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="py-3 px-4">
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className="text-left py-4 px-2 sm:px-4 font-medium text-gray-900">
                     <button
                       onClick={() => handleSort('nickname')}
-                      className="flex items-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                      className="flex items-center space-x-1 hover:text-blue-600 transition-colors w-full"
                       title="클릭하여 정렬 추가/변경/제거"
                     >
-                      <span>선수명</span>
+                      <span className="text-sm sm:text-base">선수명</span>
                       {getSortIcon('nickname')}
                     </button>
                   </th>
-                  <th className="py-3 px-4">
+                  <th className="text-center py-4 px-2 sm:px-4 font-medium text-gray-900">
                     <button
                       onClick={() => handleSort('race')}
-                      className="flex items-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                      className="flex items-center justify-center space-x-1 hover:text-blue-600 transition-colors w-full"
                       title="클릭하여 정렬 추가/변경/제거"
                     >
-                      <span>종족</span>
+                      <span className="text-sm sm:text-base">종족</span>
                       {getSortIcon('race')}
                     </button>
                   </th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">등급</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-900">소속 클랜</th>
-                  <th className="py-3 px-4">
+                  <th className="text-center py-4 px-2 sm:px-4 font-medium text-gray-900 text-sm sm:text-base">등급</th>
+                  <th className="text-center py-4 px-2 sm:px-4 font-medium text-gray-900 text-sm sm:text-base">소속 클랜</th>
+                  <th className="text-center py-4 px-2 sm:px-4 font-medium text-gray-900">
                     <button
                       onClick={() => handleSort('totalMatches')}
-                      className="flex items-center justify-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors w-full"
+                      className="flex items-center justify-center space-x-1 hover:text-blue-600 transition-colors w-full"
                       title="클릭하여 정렬 추가/변경/제거"
                     >
-                      <span>총 경기</span>
+                      <span className="text-sm sm:text-base">총 경기</span>
                       {getSortIcon('totalMatches')}
                     </button>
                   </th>
-                  <th className="py-3 px-4">
+                  <th className="text-center py-4 px-2 sm:px-4 font-medium text-gray-900">
                     <button
                       onClick={() => handleSort('wins')}
-                      className="flex items-center justify-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors w-full"
+                      className="flex items-center justify-center space-x-1 hover:text-blue-600 transition-colors w-full"
                       title="클릭하여 정렬 추가/변경/제거"
                     >
-                      <span>승리</span>
+                      <span className="text-sm sm:text-base">승리</span>
                       {getSortIcon('wins')}
                     </button>
                   </th>
-                  <th className="py-3 px-4">
+                  <th className="text-center py-4 px-2 sm:px-4 font-medium text-gray-900">
                     <button
                       onClick={() => handleSort('losses')}
-                      className="flex items-center justify-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors w-full"
+                      className="flex items-center justify-center space-x-1 hover:text-blue-600 transition-colors w-full"
                       title="클릭하여 정렬 추가/변경/제거"
                     >
-                      <span>패배</span>
+                      <span className="text-sm sm:text-base">패배</span>
                       {getSortIcon('losses')}
                     </button>
                   </th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-900">승률</th>
-                  <th className="py-3 px-4">
+                  <th className="text-center py-4 px-2 sm:px-4 font-medium text-gray-900 text-sm sm:text-base">승률</th>
+                  <th className="text-center py-4 px-2 sm:px-4 font-medium text-gray-900">
                     <button
                       onClick={() => handleSort('status')}
-                      className="flex items-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                      className="flex items-center justify-center space-x-1 hover:text-blue-600 transition-colors w-full"
                       title="클릭하여 정렬 추가/변경/제거"
                     >
-                      <span>상태</span>
+                      <span className="text-sm sm:text-base">상태</span>
                       {getSortIcon('status')}
                     </button>
                   </th>
-                  <th className="py-3 px-4">
+                  <th className="text-center py-4 px-2 sm:px-4 font-medium text-gray-900">
                     <button
                       onClick={() => handleSort('createdAt')}
-                      className="flex items-center justify-center space-x-1 font-medium text-gray-900 hover:text-blue-600 transition-colors w-full"
+                      className="flex items-center justify-center space-x-1 hover:text-blue-600 transition-colors w-full"
                       title="클릭하여 정렬 추가/변경/제거"
                     >
-                      <span>등록일</span>
+                      <span className="text-sm sm:text-base">등록일</span>
                       {getSortIcon('createdAt')}
                     </button>
                   </th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-900">액션</th>
+                  <th className="text-center py-4 px-2 sm:px-4 font-medium text-gray-900 text-sm sm:text-base">액션</th>
                 </tr>
               </thead>
               <tbody>
@@ -438,13 +594,13 @@ export default function PlayersPage() {
                       }`}
                       onClick={() => handlePlayerClick(player)}
                     >
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-2 sm:px-4">
                         <div className="flex items-center space-x-2">
                           <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                             <UserCheck className="h-4 w-4 text-blue-600" />
                           </div>
                           <div>
-                            <div className={`font-medium ${isDeleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                            <div className={`font-medium text-sm sm:text-base ${isDeleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
                               {player.nickname}
                             </div>
                             {isDeleted && (
@@ -453,9 +609,9 @@ export default function PlayersPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-2 sm:px-4 text-center">
                         {player.race ? (
-                          <span className={`px-2 py-1 rounded text-sm font-medium ${
+                          <span className={`px-2 py-1 rounded text-xs sm:text-sm font-medium ${
                             player.race === 'TERRAN' ? 'bg-blue-100 text-blue-800' :
                             player.race === 'ZERG' ? 'bg-purple-100 text-purple-800' :
                             player.race === 'PROTOSS' ? 'bg-green-100 text-green-800' :
@@ -464,46 +620,46 @@ export default function PlayersPage() {
                             {player.race}
                           </span>
                         ) : (
-                          <span className="text-gray-400 text-sm">-</span>
+                          <span className="text-gray-400 text-xs sm:text-sm">-</span>
                         )}
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-2 sm:px-4 text-center">
                         {player.grade ? (
-                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-medium">
+                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs sm:text-sm font-medium">
                             {player.grade.name}
                           </span>
                         ) : (
-                          <span className="text-gray-400 text-sm">-</span>
+                          <span className="text-gray-400 text-xs sm:text-sm">-</span>
                         )}
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-2 sm:px-4 text-center">
                         {(player.clan?.name || '없음') ? (
-                          <span className="text-blue-600 font-medium">
+                          <span className="text-blue-600 font-medium text-xs sm:text-sm">
                             {player.clan?.name || '없음'}
                           </span>
                         ) : (
-                          <span className="text-gray-400 text-sm">-</span>
+                          <span className="text-gray-400 text-xs sm:text-sm">-</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-4 px-2 sm:px-4 text-center">
                         <div className="flex items-center justify-center space-x-1">
-                          <Target className="h-4 w-4 text-gray-400" />
-                          <span className="font-medium">{totalMatches}</span>
+                          <Target className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+                          <span className="font-medium text-sm sm:text-base">{totalMatches}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-4 px-2 sm:px-4 text-center">
                         <div className="flex items-center justify-center space-x-1">
-                          <Trophy className="h-4 w-4 text-green-500" />
-                          <span className="font-medium text-green-600">{wins}</span>
+                          <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+                          <span className="font-medium text-green-600 text-sm sm:text-base">{wins}</span>
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className="font-medium text-red-600">{losses}</span>
+                      <td className="py-4 px-2 sm:px-4 text-center">
+                        <span className="font-medium text-red-600 text-sm sm:text-base">{losses}</span>
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-4 px-2 sm:px-4 text-center">
                         <div className="flex items-center justify-center space-x-2">
-                          <span className="font-medium">{winRate}%</span>
-                          <div className="w-16 bg-gray-200 rounded-full h-2">
+                          <span className="font-medium text-sm sm:text-base">{winRate}%</span>
+                          <div className="w-12 sm:w-16 bg-gray-200 rounded-full h-2">
                             <div
                               className="bg-green-500 h-2 rounded-full transition-all duration-300"
                               style={{ width: `${winRate}%` }}
@@ -511,15 +667,15 @@ export default function PlayersPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-2 sm:px-4 text-center">
                         <Badge status={player.status} />
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        <div className={`text-sm ${isDeleted ? 'text-gray-400' : 'text-gray-600'}`}>
+                      <td className="py-4 px-2 sm:px-4 text-center">
+                        <div className={`text-xs sm:text-sm ${isDeleted ? 'text-gray-400' : 'text-gray-600'}`}>
                           {new Date(player.createdAt).toLocaleDateString('ko-KR')}
                         </div>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-2 sm:px-4 text-center">
                         <div className="flex space-x-1">
                           <button
                             onClick={(e) => {
@@ -552,15 +708,15 @@ export default function PlayersPage() {
 
       {/* 페이지네이션 */}
       {totalPages > 1 && (
-        <div className="flex justify-center">
-          <div className="flex items-center space-x-2">
+        <div className="flex justify-center mt-6">
+          <div className="flex items-center space-x-1 sm:space-x-2">
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
               disabled={currentPage === 0}
-              className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              이전
+              <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="hidden sm:inline">이전</span>
             </button>
             
             <div className="flex items-center space-x-1">
@@ -576,7 +732,7 @@ export default function PlayersPage() {
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`px-3 py-2 text-sm font-medium rounded-lg ${
+                      className={`px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-lg ${
                         currentPage === pageNum
                           ? 'bg-blue-600 text-white'
                           : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
@@ -589,7 +745,7 @@ export default function PlayersPage() {
                   pageNum === currentPage - 2 ||
                   pageNum === currentPage + 2
                 ) {
-                  return <span key={pageNum} className="px-2 text-gray-500">...</span>;
+                  return <span key={pageNum} className="px-1 sm:px-2 text-gray-500 text-xs sm:text-sm">...</span>;
                 }
                 return null;
               })}
@@ -598,37 +754,15 @@ export default function PlayersPage() {
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))}
               disabled={currentPage === totalPages - 1}
-              className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              다음
-              <ChevronRight className="h-4 w-4 ml-1" />
+              <span className="hidden sm:inline">다음</span>
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
             </button>
           </div>
         </div>
       )}
 
-      {players.length === 0 && !loading && (
-        <div className="text-center py-12">
-          <UserCheck className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {showDeleted ? '선수가 없습니다' : '등록된 선수가 없습니다'}
-          </h3>
-          <p className="text-gray-500 mb-4">
-            {showDeleted 
-              ? '삭제된 선수를 포함하여 표시할 선수가 없습니다.' 
-              : '첫 번째 선수를 추가해보세요.'
-            }
-          </p>
-          {!showDeleted && (
-            <button 
-              onClick={() => setIsCreateModalOpen(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              선수 추가하기
-            </button>
-          )}
-        </div>
-      )}
 
       {/* 선수 추가 모달 */}
       <PlayerForm

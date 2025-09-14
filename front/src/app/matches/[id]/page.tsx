@@ -106,7 +106,7 @@ export default function MatchDetailPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 max-w-full overflow-x-hidden">
       {/* 뒤로가기 버튼 */}
       <button
         onClick={() => router.back()}
@@ -118,8 +118,9 @@ export default function MatchDetailPage() {
 
       {/* 경기 기본 정보 */}
       <Card className="mb-8">
-        <div className="p-6">
-          <div className="flex items-start justify-between">
+        <div className="p-4 sm:p-6">
+          {/* 데스크톱 레이아웃 */}
+          <div className="hidden lg:flex items-start justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center">
                 <Gamepad2 className="w-10 h-10 text-gray-500" />
@@ -174,6 +175,65 @@ export default function MatchDetailPage() {
                   {new Date(match.createdAt).toLocaleDateString('ko-KR')}
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* 모바일 레이아웃 */}
+          <div className="lg:hidden space-y-4">
+            {/* 제목과 아이콘 */}
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <Gamepad2 className="w-6 h-6 text-gray-500" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl font-bold text-gray-900 mb-1 truncate">
+                  {match.playerOne?.nickname} vs {match.playerTwo?.nickname}
+                </h1>
+                <div className="text-sm text-gray-500">
+                  {new Date(match.createdAt).toLocaleDateString('ko-KR')}
+                </div>
+              </div>
+            </div>
+
+            {/* 종족 정보 */}
+            <div className="flex items-center justify-center space-x-2">
+              <Badge className={`${getRaceColor(match.playerOneRace)} border-0`}>
+                {getRaceText(match.playerOneRace)}
+              </Badge>
+              <span className="text-gray-400">vs</span>
+              <Badge className={`${getRaceColor(match.playerTwoRace)} border-0`}>
+                {getRaceText(match.playerTwoRace)}
+              </Badge>
+            </div>
+
+            {/* 맵/대회 정보 */}
+            <div className="flex flex-col space-y-2 text-sm text-gray-600">
+              <div className="flex items-center justify-center">
+                <MapPin className="w-4 h-4 mr-1" />
+                <span>{match.mapName || '맵 미정'}</span>
+              </div>
+              <div className="flex items-center justify-center">
+                <Trophy className="w-4 h-4 mr-1" />
+                <span>{match.contestName || '대회 미정'}</span>
+              </div>
+            </div>
+
+            {/* 수정/삭제 버튼 - 모바일에서는 세로 배치 */}
+            <div className="flex flex-col space-y-2 pt-4 border-t border-gray-200">
+              <button
+                onClick={handleEdit}
+                className="flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                수정
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors w-full"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                삭제
+              </button>
             </div>
           </div>
 

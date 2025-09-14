@@ -61,6 +61,10 @@ export interface Match extends BaseEntity {
   matchTime?: string; // 경기 일자
   description: string;
   contestName?: string;
+  // API 응답에서 직접 제공되는 필드들 (검색/정렬용)
+  playerOneNickname?: string;
+  playerTwoNickname?: string;
+  winnerNickname?: string;
 }
 
 export interface MatchUpDateRequest {

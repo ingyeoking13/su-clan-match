@@ -145,13 +145,13 @@ public class MatchService {
       BooleanExpression playerNameCondition = null;
 
       if (StringUtils.hasText(condition.getPlayerOneNickname())) {
-        playerNameCondition = match.playerOne.nickname.like("%" + condition.getPlayerOneNickname() + "%")
-            .or(match.playerTwo.nickname.like("%" + condition.getPlayerOneNickname() + "%"));
+        playerNameCondition = match.playerOne.nickname.likeIgnoreCase("%" + condition.getPlayerOneNickname() + "%")
+            .or(match.playerTwo.nickname.likeIgnoreCase("%" + condition.getPlayerOneNickname() + "%"));
       }
 
       if (StringUtils.hasText(condition.getPlayerTwoNickname())) {
-        BooleanExpression twoCond = match.playerOne.nickname.like("%" + condition.getPlayerTwoNickname() + "%")
-            .or(match.playerTwo.nickname.like("%" + condition.getPlayerTwoNickname() + "%"));
+        BooleanExpression twoCond = match.playerOne.nickname.likeIgnoreCase("%" + condition.getPlayerTwoNickname() + "%")
+            .or(match.playerTwo.nickname.likeIgnoreCase("%" + condition.getPlayerTwoNickname() + "%"));
         playerNameCondition = (playerNameCondition == null) ? twoCond : playerNameCondition.and(twoCond);
       }
 
@@ -210,7 +210,7 @@ public class MatchService {
       }
 
       if (StringUtils.hasText(condition.getMapName())) {
-        whereCondition = whereCondition.and(match.mapName.like("%" + condition.getMapName() + "%"));
+        whereCondition = whereCondition.and(match.mapName.likeIgnoreCase("%" + condition.getMapName() + "%"));
       }
 
       if (condition.getStartedAt() != null) {

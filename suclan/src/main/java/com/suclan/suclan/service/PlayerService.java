@@ -133,7 +133,7 @@ public class PlayerService {
           : player.status.eq(EntityStatus.REGISTERED);
 
      BooleanExpression nameCondition =
-         StringUtils.hasText(searchCondition.getNickname())?player.nickname.like("%" + searchCondition.getNickname() + "%"):null;
+         StringUtils.hasText(searchCondition.getNickname())?player.nickname.likeIgnoreCase("%" + searchCondition.getNickname() + "%"):null;
 
       var query = jpaQueryFactory
           .selectFrom(player)
@@ -180,8 +180,8 @@ public class PlayerService {
 
     private PlayerDto.Response convertToResponse(Player player) {
         // 승/패 계산 로직 (간단히 구현)
-        int wins = player.getWins().size();
-        int losses = player.getLosses().size();
+        int wins = player.getWins().stream().filter(i -> i.getStatus().equals(EntityStatus.REGISTERED)).toList().size();
+        int losses = player.getLosses().stream().filter(i -> i.getStatus().equals(EntityStatus.REGISTERED)).toList().size();
 
         return PlayerDto.Response.builder()
                 .id(player.getId())
@@ -206,7 +206,7 @@ public class PlayerService {
                 .createdAt(player.getCreatedAt())
                 .updatedAt(player.getUpdatedAt())
                 .totalMatches(wins + losses)
-                .wins( wins)
+                .wins(wins)
                 .losses(losses)
                 .build();
     }

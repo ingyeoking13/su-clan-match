@@ -1,5 +1,5 @@
 // API 설정 및 유틸리티 함수들
-import { Clan, Player, Match, Contest, Grade, MatchUpDateRequest, Notice, NoticeType, MainSummary } from '@/types';
+import { Clan, Player, Match, Contest, Grade, MatchUpDateRequest, Notice, NoticeType, MainSummary, PlayerMatchSearchType } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
@@ -164,8 +164,17 @@ export const playerApi = {
   },
   
   // 선수별 경기 기록 조회
-  getMatches: (id: string | number) => {
-    return apiClient.get<PaginatedResponse<Match>>(`/matches/player/${id}`);
+  getMatches: (id: string | number, matchSearchType?: PlayerMatchSearchType, page: number = 0, size: number = 10) => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString()
+    });
+    if (matchSearchType) {
+      params.append('matchSearchType', matchSearchType);
+    }
+    const queryString = params.toString();
+    const endpoint = `/matches/player/${id}?${queryString}`;
+    return apiClient.get<PaginatedResponse<Match>>(endpoint);
   },
   create: (data: Partial<Player> & { gradeId?: number }) => {
     return apiClient.post<Player>('/players', data);

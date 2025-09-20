@@ -8,6 +8,11 @@ export enum EntityStatus {
   EXPIRED = 'EXPIRED'
 }
 
+export enum PlayerMatchSearchType {
+  LATEST = 'LATEST', // 최신순 (최근 경기용)
+  GROUPED_PER_PLAYER = 'GROUPED_PER_PLAYER' // 선수별 그룹화 (상대 전적용)
+}
+
 export interface BaseEntity {
   id: number;
   status: EntityStatus;
@@ -65,6 +70,9 @@ export interface Match extends BaseEntity {
   playerOneNickname?: string;
   playerTwoNickname?: string;
   winnerNickname?: string;
+  // 상대전적용 집계 필드 (GROUPED_PER_PLAYER 타입에서 사용)
+  playerOneWins?: number;
+  opponentWins?: number;
 }
 
 export interface MatchUpDateRequest {

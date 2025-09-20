@@ -1,6 +1,7 @@
 package com.suclan.suclan.dto;
 
 import com.suclan.suclan.constant.EntityStatus;
+import com.suclan.suclan.constant.PlayerMatchSearchType;
 import com.suclan.suclan.constant.Race;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -84,6 +85,8 @@ public class MatchDto {
         private String mapName;
         private LocalDateTime createdAt;
         private LocalDateTime matchTime;
+        private Long playerOneWins;
+        private Long opponentWins;
     }
 
   @Data
@@ -109,5 +112,6 @@ public class MatchDto {
     private LocalDateTime startedAt;
     private LocalDateTime endedAt;
     private boolean includeDeleted;
+    private PlayerMatchSearchType matchSearchType;
   }
 }

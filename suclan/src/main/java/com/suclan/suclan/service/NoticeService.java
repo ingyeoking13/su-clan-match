@@ -41,7 +41,6 @@ public class NoticeService {
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize());
 
-
     long size = jpaQueryFactory.selectFrom(notice)
         .where(notice.status.ne(EntityStatus.DELETED), whereCondition)
         .select(notice.count())

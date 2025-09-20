@@ -20,6 +20,7 @@ import com.suclan.suclan.repository.PlayerClanRepository;
 import com.suclan.suclan.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -137,10 +138,7 @@ public class PlayerService {
 
       var query = jpaQueryFactory
           .selectFrom(player)
-          .where(stateCondition, nameCondition)
-          .offset(pageable.getOffset())
-          .limit(pageable.getPageSize());
-
+          .where(stateCondition, nameCondition);
 
       List<OrderSpecifier<?>> orders = new ArrayList<>();
       for (Sort.Order o : pageable.getSort()) {
@@ -158,8 +156,12 @@ public class PlayerService {
            orders.add(new OrderSpecifier<>(dir, entityPath.getString(o.getProperty())));
         }
       }
+      orders.add(new OrderSpecifier<>(Order.DESC, player.id));
 
-      List<PlayerDto.Summary> result = query.orderBy(orders.toArray(new OrderSpecifier[]{})).fetch().stream().map(this::convertToSummary).toList();
+      List<PlayerDto.Summary> result = query.orderBy(orders.toArray(new OrderSpecifier[]{}))
+          .offset(pageable.getOffset())
+          .limit(pageable.getPageSize())
+          .fetch().stream().map(this::convertToSummary).toList();
 
       long total = jpaQueryFactory
           .select(player.count())
@@ -224,18 +226,21 @@ public class PlayerService {
             .build();
       }
 
-        return PlayerDto.Summary.builder()
-                .id(player.getId())
-                .nickname(player.getNickname())
-                .grade(player.getGrade() != null ? convertGradeToSummary(player.getGrade()) : null)
-                .wins(player.getWins().size())
-                .losses(player.getLosses().size())
-                .race(player.getRace())
-                .totalMatches(player.getWins().size() + player.getLosses().size())
-                .clan(clanDto)
-                .status(player.getStatus())
-                .createdAt(player.getCreatedAt())
-                .build();
+      int wins = player.getWins().stream().filter(i -> i.getStatus().equals(EntityStatus.REGISTERED)).toList().size();
+      int losses = player.getLosses().stream().filter(i -> i.getStatus().equals(EntityStatus.REGISTERED)).toList().size();
+
+      return PlayerDto.Summary.builder()
+          .id(player.getId())
+          .nickname(player.getNickname())
+          .grade(player.getGrade() != null ? convertGradeToSummary(player.getGrade()) : null)
+          .wins(wins)
+          .losses(losses)
+          .race(player.getRace())
+          .totalMatches(wins + losses)
+          .clan(clanDto)
+          .status(player.getStatus())
+          .createdAt(player.getCreatedAt())
+          .build();
     }
 
     private GradeDto.Summary convertGradeToSummary(Grade grade) {

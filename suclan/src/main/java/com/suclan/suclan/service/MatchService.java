@@ -1,32 +1,38 @@
 package com.suclan.suclan.service;
 
+import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.core.types.dsl.*;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.suclan.suclan.constant.EntityStatus;
+import com.suclan.suclan.constant.PlayerMatchSearchType;
 import com.suclan.suclan.domain.Contest;
 import com.suclan.suclan.domain.Match;
 import com.suclan.suclan.domain.Player;
-import com.suclan.suclan.dto.ContestDto;
-import com.suclan.suclan.dto.MatchDto;
-import com.suclan.suclan.dto.PlayerDto;
+import com.suclan.suclan.domain.QMatch;
+import com.suclan.suclan.dto.*;
 import com.suclan.suclan.exception.ResourceNotFoundException;
 import com.suclan.suclan.repository.MatchRepository;
 import com.suclan.suclan.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.config.YamlProcessor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static com.suclan.suclan.constant.EntityStatus.REGISTERED;
 import static com.suclan.suclan.domain.QMatch.match;
 import static com.suclan.suclan.domain.QPlayer.player;
 
@@ -38,6 +44,7 @@ public class MatchService {
     private final PlayerRepository playerRepository;
     private final ContestService contestService;
     private final JPAQueryFactory jpaQueryFactory;
+    private final JdbcTemplate jdbcTemplate;
 
     @Transactional
     public MatchDto.Response createMatch(MatchDto.CreateRequest request) {
@@ -158,15 +165,13 @@ public class MatchService {
       BooleanExpression deleteCondition = null;
 
       if (condition.isIncludeDeleted()){
-        deleteCondition = match.status.in(EntityStatus.REGISTERED, EntityStatus.DELETED);
+        deleteCondition = match.status.in(REGISTERED, EntityStatus.DELETED);
       } else {
-        deleteCondition = match.status.in(EntityStatus.REGISTERED);
+        deleteCondition = match.status.in(REGISTERED);
       }
 
       var query = jpaQueryFactory.selectFrom(match)
-          .where(playerNameCondition, deleteCondition)
-          .offset(pageable.getOffset())
-          .limit(pageable.getPageSize());
+          .where(playerNameCondition, deleteCondition);
 
       List<OrderSpecifier<?>> orders = new ArrayList<>();
       for (Sort.Order o : pageable.getSort()) {
@@ -180,17 +185,20 @@ public class MatchService {
           orders.add(new OrderSpecifier<>(o.isAscending() ? Order.ASC : Order.DESC, entityPath.getString(o.getProperty())));
         }
       }
+      orders.add(new OrderSpecifier<>(Order.DESC, match.id));
 
      List<MatchDto.Summary> result = query.orderBy(
          orders.toArray(new OrderSpecifier[]{})
-     ).fetch().stream().map(
+     ).offset(pageable.getOffset())
+      .limit(pageable.getPageSize())
+      .fetch().stream().map(
          this::convertToSummary
      ).toList();
 
       long total = jpaQueryFactory
           .select(match.count())
           .from(match)
-          .where(playerNameCondition)
+          .where(playerNameCondition, deleteCondition)
           .fetchOne();
 
       return new PageImpl<>(result, pageable, total);
@@ -198,14 +206,36 @@ public class MatchService {
 
     @Transactional
     public Page<MatchDto.Summary> getMatchesByPlayer(Long playerId, MatchDto.PlayerSpecificCondition condition, Pageable pageable) {
+      if (condition.getMatchSearchType().equals(PlayerMatchSearchType.LATEST)) {
+        return getMatchesByPlayerByLatest(playerId, condition, pageable);
+      }
 
+       // Java에서 같은 상대방끼리 합치기
+      Page<OpponentSummary> queryResult = matchRepository.findOpponentSummaries(playerId, condition.getOpponentNickname(), pageable);
+      List<MatchDto.Summary> result  = queryResult.stream().map(
+          tuple -> {
+            Long opponentId = tuple.getOpponentId();
+            PlayerDto.Summary oppponet = playerRepository.findById(opponentId).map(this::convertPlayerToSummary).get();
+            return MatchDto.Summary.builder()
+                .playerOne(playerRepository.findById(playerId).map(this::convertPlayerToSummary).get())
+                .playerTwo(oppponet)
+                .playerTwoRace(oppponet.getRace())
+                .playerOneWins(tuple.getWin())
+                .opponentWins(tuple.getLose())
+                .build();
+          }
+      ).toList();
+      return new PageImpl<>(result, pageable, queryResult.getTotalElements());
+    }
+
+    private Page<MatchDto.Summary> getMatchesByPlayerByLatest(Long playerId, MatchDto.PlayerSpecificCondition condition, Pageable pageable) {
       BooleanExpression whereCondition =
           match.playerOne.id.eq(playerId).or(match.playerTwo.id.eq(playerId));
 
       if (StringUtils.hasText(condition.getOpponentNickname())) {
         whereCondition.and(
-            match.playerOne.nickname.eq(condition.getOpponentNickname())
-                .or(match.playerTwo.nickname.eq(condition.getOpponentNickname()))
+            match.playerOne.nickname.likeIgnoreCase("%" + condition.getOpponentNickname() +"%")
+                .or(match.playerTwo.nickname.likeIgnoreCase("%" + condition.getOpponentNickname() + "%"))
         );
       }
 
@@ -222,13 +252,15 @@ public class MatchService {
       }
 
       if (!condition.isIncludeDeleted()) {
-        whereCondition = whereCondition.and(match.status.eq(EntityStatus.REGISTERED));
+        whereCondition = whereCondition.and(match.status.eq(REGISTERED));
       } else {
-        whereCondition = whereCondition.and(match.status.in(EntityStatus.REGISTERED, EntityStatus.DELETED));
+        whereCondition = whereCondition.and(match.status.in(REGISTERED, EntityStatus.DELETED));
       }
 
       List<MatchDto.Summary> result = jpaQueryFactory.selectFrom(match)
           .where(whereCondition)
+          .offset(pageable.getOffset())
+          .limit(pageable.getPageSize())
           .fetch()
           .stream().map(
               this::convertToSummary
@@ -290,6 +322,12 @@ public class MatchService {
         return PlayerDto.Summary.builder()
                 .id(player.getId())
                 .nickname(player.getNickname())
+                .race(player.getRace())
+                .grade(
+                    GradeDto.Summary.builder()
+                        .name(player.getGrade().getName())
+                            .build())
+//      AND (p2.nickname LIKE :oppo or p.nickname LIKE :oppo)
                 .status(player.getStatus())
                 .build();
     }

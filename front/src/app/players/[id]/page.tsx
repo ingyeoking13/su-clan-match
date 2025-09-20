@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useApi } from '@/hooks/useApi';
 import { playerApi } from '@/lib/api';
-import { Match } from '@/types';
+import { Match, PlayerMatchSearchType } from '@/types';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ErrorMessage } from '@/components/ui/ErrorMessage';
 import { Card } from '@/components/ui/Card';
@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/Badge';
 import { PlayerEditForm } from '@/components/PlayerEditForm';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { useApiMutation } from '@/hooks/useApi';
-import { ArrowLeft, User, Target, Calendar, MapPin, Gamepad2, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, User, Target, Calendar, MapPin, Gamepad2, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function PlayerDetailPage() {
   const params = useParams();
@@ -26,19 +26,36 @@ export default function PlayerDetailPage() {
     error: playerError 
   } = useApi(() => playerApi.getById(playerId), [playerId]);
 
-  // 선수의 전체 경기 기록
-  const { 
-    data: matchesResponse, 
-    loading: matchesLoading, 
-    error: matchesError 
-  } = useApi(() => playerApi.getMatches(playerId), [playerId]);
-
-  const matches = matchesResponse?.content || [];
-
   // 편집/삭제 모달 상태
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { mutate: deletePlayer, loading: deleteLoading } = useApiMutation<void>();
+
+  // 페이지네이션 상태
+  const [recentMatchesPage, setRecentMatchesPage] = useState(0);
+  const [headToHeadPage, setHeadToHeadPage] = useState(0);
+  const pageSize = 10;
+
+  // 선수의 최근 경기 기록 (최신순)
+  const { 
+    data: recentMatchesResponse, 
+    loading: recentMatchesLoading, 
+    error: recentMatchesError 
+  } = useApi(() => playerApi.getMatches(playerId, PlayerMatchSearchType.LATEST, recentMatchesPage, pageSize), [playerId, recentMatchesPage, pageSize]);
+
+  // 선수의 상대전적 데이터 (선수별 그룹화)
+  const { 
+    data: headToHeadMatchesResponse, 
+    loading: headToHeadMatchesLoading, 
+    error: headToHeadMatchesError 
+  } = useApi(() => playerApi.getMatches(playerId, PlayerMatchSearchType.GROUPED_PER_PLAYER, headToHeadPage, pageSize), [playerId, headToHeadPage, pageSize]);
+
+  const recentMatches = useMemo(() => recentMatchesResponse?.content || [], [recentMatchesResponse]);
+  const headToHeadMatches = useMemo(() => headToHeadMatchesResponse?.content || [], [headToHeadMatchesResponse]);
+
+  // 페이지네이션 정보
+  const recentMatchesTotalPages = recentMatchesResponse?.totalPages || 0;
+  const headToHeadTotalPages = headToHeadMatchesResponse?.totalPages || 0;
 
   // 상대전적 데이터 계산
   const [headToHeadData, setHeadToHeadData] = useState<{
@@ -51,58 +68,36 @@ export default function PlayerDetailPage() {
   }>({});
 
   useEffect(() => {
-    if (!player || !matches.length) return;
+    if (!player || !headToHeadMatches.length) return;
 
     const h2hData: typeof headToHeadData = {};
 
-    matches.forEach(match => {
-      let opponentId: number;
-      let opponentNickname: string;
-      let opponentRace: string | undefined;
-      let isWin: boolean;
-
-      if (match.playerOne.id === player.id) {
-        opponentId = match.playerTwo.id;
-        opponentNickname = match.playerTwo.nickname;
-        opponentRace = match.playerTwoRace;
-        isWin = match.winner?.id === player.id;
-      } else if (match.playerTwo.id === player.id) {
-        opponentId = match.playerOne.id;
-        opponentNickname = match.playerOne.nickname;
-        opponentRace = match.playerOneRace;
-        isWin = match.winner?.id === player.id;
-      } else {
-        return; // 이 경기에 해당 선수가 참여하지 않음
-      }
+    headToHeadMatches.forEach(match => {
+      // 백엔드에서 이미 집계된 데이터를 사용
+      // playerOne은 항상 현재 플레이어, playerTwo는 상대방
+      const opponentId = match.playerTwo.id;
+      const opponentNickname = match.playerTwo.nickname;
+      const opponentRace = match.playerTwoRace;
+      
+      // 백엔드에서 제공하는 집계 데이터 사용
+      const wins = match.playerOneWins || 0;
+      const losses = match.opponentWins || 0;
 
       const opponentKey = opponentId.toString();
-      if (!h2hData[opponentKey]) {
-        h2hData[opponentKey] = {
-          opponent: { id: opponentId, nickname: opponentNickname, race: opponentRace },
-          wins: 0,
-          losses: 0,
-          matches: []
-        };
-      }
-
-      if (isWin) {
-        h2hData[opponentKey].wins++;
-      } else {
-        h2hData[opponentKey].losses++;
-      }
-      
-      h2hData[opponentKey].matches.push(match);
+      h2hData[opponentKey] = {
+        opponent: { id: opponentId, nickname: opponentNickname, race: opponentRace },
+        wins,
+        losses,
+        matches: [match] // 집계된 데이터이므로 단일 항목
+      };
     });
 
     setHeadToHeadData(h2hData);
-  }, [player, matches]);
+  }, [player, headToHeadMatches]);
 
-  // 전체 전적 계산
-  const totalWins = matches.filter(match => match.winner?.id === player?.id).length;
-  const totalLosses = matches.filter(match => 
-    (match.playerOne.id === player?.id || match.playerTwo.id === player?.id) && 
-    match.winner?.id !== player?.id
-  ).length;
+  // 전체 전적 계산 - 집계된 데이터 사용
+  const totalWins = headToHeadMatches.reduce((sum, match) => sum + (match.playerOneWins || 0), 0);
+  const totalLosses = headToHeadMatches.reduce((sum, match) => sum + (match.opponentWins || 0), 0);
   const winRate = totalWins + totalLosses > 0 ? (totalWins / (totalWins + totalLosses) * 100).toFixed(1) : '0.0';
 
   // 핸들러 함수들
@@ -158,7 +153,7 @@ export default function PlayerDetailPage() {
     }
   };
 
-  if (playerLoading) {
+  if (playerLoading || recentMatchesLoading || headToHeadMatchesLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <LoadingSpinner />
@@ -166,7 +161,7 @@ export default function PlayerDetailPage() {
     );
   }
 
-  if (playerError) {
+  if (playerError || recentMatchesError || headToHeadMatchesError) {
     return <ErrorMessage message="선수 정보를 불러오는 중 오류가 발생했습니다." />;
   }
 
@@ -348,6 +343,64 @@ export default function PlayerDetailPage() {
                   })}
               </div>
             )}
+
+            {/* 상대전적 페이지네이션 */}
+            {headToHeadTotalPages > 1 && (
+              <div className="flex justify-center mt-4">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setHeadToHeadPage(prev => Math.max(prev - 1, 0))}
+                    disabled={headToHeadPage === 0}
+                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    이전
+                  </button>
+                  
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: Math.min(headToHeadTotalPages, 5) }, (_, i) => {
+                      const pageNum = i;
+                      const displayPageNum = pageNum + 1;
+                      
+                      if (
+                        pageNum === 0 ||
+                        pageNum === headToHeadTotalPages - 1 ||
+                        (pageNum >= headToHeadPage - 1 && pageNum <= headToHeadPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setHeadToHeadPage(pageNum)}
+                            className={`px-3 py-2 text-sm font-medium rounded-lg ${
+                              headToHeadPage === pageNum
+                                ? 'bg-blue-600 text-white'
+                                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            {displayPageNum}
+                          </button>
+                        );
+                      } else if (
+                        pageNum === headToHeadPage - 2 ||
+                        pageNum === headToHeadPage + 2
+                      ) {
+                        return <span key={pageNum} className="px-2 text-gray-500">...</span>;
+                      }
+                      return null;
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => setHeadToHeadPage(prev => Math.min(prev + 1, headToHeadTotalPages - 1))}
+                    disabled={headToHeadPage === headToHeadTotalPages - 1}
+                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    다음
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </Card>
 
@@ -358,11 +411,11 @@ export default function PlayerDetailPage() {
               <Gamepad2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               최근 경기
             </h2>
-            {matches.length === 0 ? (
+            {recentMatches.length === 0 ? (
               <p className="text-gray-500 text-center py-6 sm:py-8 text-sm sm:text-base">경기 기록이 없습니다.</p>
             ) : (
               <div className="space-y-2 sm:space-y-3">
-                {matches.slice(0, 10).map((match) => {
+                {recentMatches.map((match) => {
                   const isPlayerOne = match.playerOne.id === player.id;
                   const opponent = isPlayerOne 
                     ? { nickname: match.playerTwo.nickname, race: match.playerTwoRace }
@@ -461,6 +514,64 @@ export default function PlayerDetailPage() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {/* 최근 경기 페이지네이션 */}
+            {recentMatchesTotalPages > 1 && (
+              <div className="flex justify-center mt-4">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setRecentMatchesPage(prev => Math.max(prev - 1, 0))}
+                    disabled={recentMatchesPage === 0}
+                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    이전
+                  </button>
+                  
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: Math.min(recentMatchesTotalPages, 5) }, (_, i) => {
+                      const pageNum = i;
+                      const displayPageNum = pageNum + 1;
+                      
+                      if (
+                        pageNum === 0 ||
+                        pageNum === recentMatchesTotalPages - 1 ||
+                        (pageNum >= recentMatchesPage - 1 && pageNum <= recentMatchesPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setRecentMatchesPage(pageNum)}
+                            className={`px-3 py-2 text-sm font-medium rounded-lg ${
+                              recentMatchesPage === pageNum
+                                ? 'bg-blue-600 text-white'
+                                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                            }`}
+                          >
+                            {displayPageNum}
+                          </button>
+                        );
+                      } else if (
+                        pageNum === recentMatchesPage - 2 ||
+                        pageNum === recentMatchesPage + 2
+                      ) {
+                        return <span key={pageNum} className="px-2 text-gray-500">...</span>;
+                      }
+                      return null;
+                    })}
+                  </div>
+                  
+                  <button
+                    onClick={() => setRecentMatchesPage(prev => Math.min(prev + 1, recentMatchesTotalPages - 1))}
+                    disabled={recentMatchesPage === recentMatchesTotalPages - 1}
+                    className="flex items-center px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    다음
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </button>
+                </div>
               </div>
             )}
           </div>

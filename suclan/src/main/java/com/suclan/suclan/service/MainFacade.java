@@ -1,6 +1,7 @@
 package com.suclan.suclan.service;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.suclan.suclan.constant.EntityStatus;
 import com.suclan.suclan.domain.Match;
 import com.suclan.suclan.domain.Player;
 import com.suclan.suclan.dto.MainDto;
@@ -28,10 +29,10 @@ public class MainFacade {
   public MainDto.Summary getSummary() {
 
 
-    Long clanCount = jpaQueryFactory.selectFrom( clan ).select(clan.count()).fetchFirst();
-    Long memberCount = jpaQueryFactory.selectFrom( player ).select( player.count() ).fetchFirst();
-    Long matchCount = jpaQueryFactory.selectFrom( match ).select( match.count() ).fetchFirst();
-    List<Match> matchList =  jpaQueryFactory.selectFrom( match ).orderBy(match.matchTime.desc()).limit(10).fetch();
+    Long clanCount = jpaQueryFactory.selectFrom( clan ).where(clan.status.eq(EntityStatus.REGISTERED)).select(clan.count()).fetchFirst();
+    Long memberCount = jpaQueryFactory.selectFrom( player ).where(player.status.eq(EntityStatus.REGISTERED)).select( player.count() ).fetchFirst();
+    Long matchCount = jpaQueryFactory.selectFrom( match ).where(match.status.eq(EntityStatus.REGISTERED)).select( match.count() ).fetchFirst();
+    List<Match> matchList =  jpaQueryFactory.selectFrom( match ).where(match.status.eq(EntityStatus.REGISTERED)).orderBy(match.matchTime.desc()).limit(10).fetch();
 
     return MainDto.Summary.builder()
         .clanCount(clanCount)

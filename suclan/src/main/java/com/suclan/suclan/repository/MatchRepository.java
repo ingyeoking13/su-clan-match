@@ -21,22 +21,35 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
   //      AND (p2.nickname LIKE :oppo or p.nickname LIKE :oppo)
   @Query(value = """
-    SELECT
-      CASE
-        WHEN m.player_one_id = :playerId THEN m.player_two_id
-        ELSE m.player_one_id
-      END AS opponent_id,
-      COUNT(*) AS total_count,
-      SUM(CASE WHEN m.winner_id = :playerId THEN 1 ELSE 0 END) AS win,
-      SUM(CASE WHEN m.loser_id = :playerId THEN 1 ELSE 0 END) AS lose
-    FROM matches m
-    JOIN players p ON (m.player_one_id = p.id)
-    JOIN players p2 ON (m.player_two_id = p2.id)
-    WHERE m.status = 'REGISTERED'
-      AND (m.player_one_id = :playerId OR m.player_two_id = :playerId)
-    GROUP BY opponent_id
-    """, nativeQuery = true)
+       WITH base_cte AS (
+          SELECT
+            CASE
+              WHEN m.player_one_id = :playerId THEN m.player_two_id
+              ELSE m.player_one_id
+            END AS opponent_id,
+            m.winner_id,
+            m.loser_id
+          FROM matches m
+          WHERE m.status = 'REGISTERED'
+            AND (m.player_one_id = :playerId OR m.player_two_id = :playerId)
+        )
+        SELECT 
+          opponent_id,
+          COUNT(*) as total_count,
+          SUM(CASE WHEN winner_id = :playerId THEN 1 END) as win,
+          SUM(CASE WHEN loser_id = :playerId THEN 1 END) as lose
+        From base_cte
+        GROUP BY opponent_id, winner_id, loser_id
+    """, countQuery = """
+        SELECT COUNT(
+          DISTINCT (CASE WHEN m.player_one_id = :playerId THEN m.player_two_id ELSE m.player_one_id END)
+        )
+        FROM matches m
+        WHERE m.status = 'REGISTERED'
+            AND (m.player_one_id = :playerId OR m.player_two_id = :playerId)
+      """
+      , nativeQuery = true)
   Page<OpponentSummary> findOpponentSummaries(@Param("playerId") Long playerId,
-                                              @Param("oppo") String opponentName,
+                                              @Param("oppo") Long opponentId,
                                               Pageable pageable);
 }

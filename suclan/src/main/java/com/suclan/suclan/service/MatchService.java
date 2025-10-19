@@ -27,10 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.suclan.suclan.constant.EntityStatus.REGISTERED;
 import static com.suclan.suclan.domain.QMatch.match;
@@ -180,8 +177,13 @@ public class MatchService {
           orders.add(new OrderSpecifier<>(o.isAscending() ? Order.ASC : Order.DESC, match.playerOne.nickname));
         } else if (o.getProperty().equalsIgnoreCase("playerTwoNickname")) {
           orders.add(new OrderSpecifier<>(o.isAscending() ? Order.ASC : Order.DESC, match.playerTwo.nickname));
-        }
-        else{
+        } else if (o.getProperty().equalsIgnoreCase("matchTime")) {
+          if (o.isAscending()) {
+            orders.add(match.matchTime.asc().nullsLast());
+          } else {
+            orders.add(match.matchTime.desc().nullsLast());
+          }
+        } else{
           orders.add(new OrderSpecifier<>(o.isAscending() ? Order.ASC : Order.DESC, entityPath.getString(o.getProperty())));
         }
       }
@@ -210,16 +212,16 @@ public class MatchService {
         return getMatchesByPlayerByLatest(playerId, condition, pageable);
       }
 
-       // Java에서 같은 상대방끼리 합치기
-      Page<OpponentSummary> queryResult = matchRepository.findOpponentSummaries(playerId, condition.getOpponentNickname(), pageable);
+      Optional<Player> p = playerRepository.findByNickname(condition.getOpponentNickname());
+      Page<OpponentSummary> queryResult = matchRepository.findOpponentSummaries(playerId, p.map(Player::getId).orElse(null), pageable);
       List<MatchDto.Summary> result  = queryResult.stream().map(
           tuple -> {
             Long opponentId = tuple.getOpponentId();
-            PlayerDto.Summary oppponet = playerRepository.findById(opponentId).map(this::convertPlayerToSummary).get();
+            PlayerDto.Summary oppponent = playerRepository.findById(opponentId).map(this::convertPlayerToSummary).get();
             return MatchDto.Summary.builder()
                 .playerOne(playerRepository.findById(playerId).map(this::convertPlayerToSummary).get())
-                .playerTwo(oppponet)
-                .playerTwoRace(oppponet.getRace())
+                .playerTwo(oppponent)
+                .playerTwoRace(oppponent.getRace())
                 .playerOneWins(tuple.getWin())
                 .opponentWins(tuple.getLose())
                 .build();

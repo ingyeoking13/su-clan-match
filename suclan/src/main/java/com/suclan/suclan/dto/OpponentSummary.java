@@ -1,8 +1,15 @@
 package com.suclan.suclan.dto;
 
-public interface OpponentSummary {
-  Long getOpponentId();
-  Long getTotalCount();
-  Long getWin();
-  Long getLose();
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class OpponentSummary {
+  Long opponentId;
+  Long totalCount;
+  Long win;
+  Long lose;
 }

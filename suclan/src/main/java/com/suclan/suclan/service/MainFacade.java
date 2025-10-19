@@ -32,7 +32,7 @@ public class MainFacade {
     Long clanCount = jpaQueryFactory.selectFrom( clan ).where(clan.status.eq(EntityStatus.REGISTERED)).select(clan.count()).fetchFirst();
     Long memberCount = jpaQueryFactory.selectFrom( player ).where(player.status.eq(EntityStatus.REGISTERED)).select( player.count() ).fetchFirst();
     Long matchCount = jpaQueryFactory.selectFrom( match ).where(match.status.eq(EntityStatus.REGISTERED)).select( match.count() ).fetchFirst();
-    List<Match> matchList =  jpaQueryFactory.selectFrom( match ).where(match.status.eq(EntityStatus.REGISTERED)).orderBy(match.matchTime.desc()).limit(10).fetch();
+    List<Match> matchList =  jpaQueryFactory.selectFrom( match ).where(match.status.eq(EntityStatus.REGISTERED)).orderBy(match.matchTime.desc().nullsLast()).limit(10).fetch();
 
     return MainDto.Summary.builder()
         .clanCount(clanCount)

@@ -9,8 +9,6 @@ import {
   UserCheck,
   Trophy,
   Gamepad2,
-  Settings,
-  BarChart3,
   Award,
   Bell
 } from 'lucide-react';
@@ -23,8 +21,6 @@ const navigation = [
   { name: '경기 관리', href: '/matches', icon: Gamepad2 },
   { name: '대회 관리', href: '/contests', icon: Trophy },
   { name: '게시판', href: '/notices', icon: Bell },
-  { name: '통계', href: '/stats', icon: BarChart3 },
-  { name: '설정', href: '/settings', icon: Settings },
 ];
 
 export const Sidebar: React.FC = () => {

@@ -26,12 +26,12 @@ export const RecentMatches: React.FC<RecentMatchesProps> = ({ matches }) => {
               >
                 <div className="flex-1">
                   <div className="flex items-center space-x-4">
-                    <div className="text-sm font-medium">
+                    <div className="text-sm font-medium text-black">
                       {match.playerOne.nickname} vs {match.playerTwo.nickname}
                     </div>
                     {match.winner && (
-                      <div className="text-sm text-green-600 font-medium">
-                        승자: {match.winner.nickname}
+                      <div className="text-sm font-medium">
+                        <span className="text-green-600">승자:</span> <span className="text-black">{match.winner.nickname}</span>
                       </div>
                     )}
                   </div>

@@ -452,14 +452,14 @@ export default function PlayerDetailPage() {
                             <Badge className={`${getRaceColor(me.race)} border-0 text-xs`}>
                               {getRaceText(me.race)}
                             </Badge>
-                            <span className="font-medium text-sm truncate">{me.nickname}</span>
+                            <span className="font-medium text-sm truncate text-black">{me.nickname}</span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <span className="text-gray-400 text-sm">vs</span>
                             <Badge className={`${getRaceColor(opponent.race)} border-0 text-xs`}>
                               {getRaceText(opponent.race)}
                             </Badge>
-                            <span className="font-medium text-sm truncate">{opponent.nickname}</span>
+                            <span className="font-medium text-sm truncate text-black">{opponent.nickname}</span>
                           </div>
                         </div>
                         
@@ -484,14 +484,14 @@ export default function PlayerDetailPage() {
                                 <Badge className={`${getRaceColor(me.race)} border-0 text-xs`}>
                                   {getRaceText(me.race)}
                                 </Badge>
-                                <span className="font-medium">{me.nickname}</span>
+                                <span className="font-medium text-black">{me.nickname}</span>
                               </div>
                               <span className="text-gray-400">vs</span>
                               <div className="flex items-center space-x-2">
                                 <Badge className={`${getRaceColor(opponent.race)} border-0 text-xs`}>
                                   {getRaceText(opponent.race)}
                                 </Badge>
-                                <span className="font-medium">{opponent.nickname}</span>
+                                <span className="font-medium text-black">{opponent.nickname}</span>
                               </div>
                             </div>
                             <div className="flex items-center space-x-1 text-sm text-gray-500">

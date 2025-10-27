@@ -39,7 +39,7 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
           SUM(CASE WHEN winner_id = :playerId THEN 1 END) as win,
           SUM(CASE WHEN loser_id = :playerId THEN 1 END) as lose
         From base_cte
-        GROUP BY opponent_id, winner_id, loser_id
+        GROUP BY opponent_id
     """, countQuery = """
         SELECT COUNT(
           DISTINCT (CASE WHEN m.player_one_id = :playerId THEN m.player_two_id ELSE m.player_one_id END)
